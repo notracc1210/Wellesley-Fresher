@@ -51,6 +51,8 @@ const mongoUri = cs304.getMongoUri();
 const DB = "fresher";
 const STUDENTS = "students";
 const REVIEWS = "reviews";
+const STAFF = "staff";
+const IMAGES = "images";
 
 const ROUNDS = 10;
 
@@ -112,13 +114,18 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-app.get("/signup", (req, res) => {
-	return res.render("signup.ejs");
-});
+// function to confirm user is staff, for staff dashboard
+function isStaff(req, res, next) {
+	if (!req.session.logged_in || !req.session.isStaff) {
+		req.flash("error", "Staff access required.");
+		return res.redirect("/home");
+	}
+	next();
+}
 
 // staff page/dashboard, commented out login permissions for now
 // login requirement should be specifc to Wellesey fresh staff accounts
-app.get("/staff", async (req, res) => {
+app.get("/staff", isStaff, async (req, res) => {
 	// if (!req.session.logged_in) {
 	// 	req.flash("error", "You must be logged in view the staff dashboard.");
 	// 	return res.redirect("/login");
@@ -129,12 +136,12 @@ app.get("/staff", async (req, res) => {
 	});
 });
 
-// review submission form, commented out login permissions for now
+// review submission form, check login functionality
 app.get("/review-form", (req, res) => {
-	// if (!req.session.logged_in) {
-	// 	req.flash("error", "You must be logged in to submit a review.");
-	// 	return res.redirect("/login");
-	// }
+	if (!req.session.logged_in) {
+		req.flash("error", "You must be logged in to submit a review.");
+		return res.redirect("/login");
+	}
 	return res.render("review-form.ejs", {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
@@ -153,6 +160,10 @@ async function getNextUid(counterName) {
     return doc.seq;
 }
     */
+
+app.get("/signup", (req, res) => {
+	return res.render("signup.ejs");
+});
 
 app.post("/signup", async (req, res) => {
 	try {
