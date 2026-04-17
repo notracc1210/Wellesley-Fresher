@@ -66,6 +66,16 @@ app.get("/home", async (req, res) => {
 			{ projection: { reviewText: 1, diningHallName: 1, dateUploaded: 1 } },
 		)
 		.toArray();
+
+	// if not enough reviews, add placeholders
+	while (display_reviews.length < 3) {
+		display_reviews.push({
+			reviewText: "No reviews yet",
+			diningHallName: "Coming soon",
+			dateUploaded: new Date(),
+		});
+	}
+
 	return res.render("homepage.ejs", {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
@@ -78,6 +88,7 @@ app.get("/", (req, res) => {
 	return res.redirect("/home");
 });
 
+// login routes AKA student login routes
 app.get("/login", (req, res) => {
 	return res.render("login.ejs");
 });
@@ -114,6 +125,7 @@ app.post("/login", async (req, res) => {
 	}
 });
 
+// begin staff login routes
 app.get("/staff-login", (req, res) => {
 	return res.render("staff-login.ejs");
 });
