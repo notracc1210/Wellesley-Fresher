@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Submit Review - Wellesley Fresher</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="container">
+			<!-- Header/Navigation -->
+			<header>
+				<h1>Wellesley Fresher</h1>
+				<nav>
+					<a href="index.html">Home</a>
+					<button id="logout-btn">Log Out</button>
+				</nav>
+			</header>
+
+			<!-- Main Content -->
+			<main>
+				<section class="review-form-section">
+					<h2>Share Your Dining Experience</h2>
+
+					<form id="review-form" enctype="multipart/form-data">
+						<!-- Dining Hall Location -->
+						<div class="form-group">
+							<label for="dining-hall">Dining Hall Location *</label>
+							<select id="dining-hall" name="dining-hall" required>
+								<option value="">-- Select a Dining Hall --</option>
+								<option value="tower-court">Tower Court</option>
+								<option value="stone-davis">Stone-Davis</option>
+								<option value="bates">Bates</option>
+							</select>
+						</div>
+
+						<!-- Meal Time Period -->
+						<div class="form-group">
+							<label for="meal-time">Meal Time Period *</label>
+							<select id="meal-time" name="meal-time" required>
+								<option value="">-- Select Meal Time --</option>
+								<option value="breakfast">Breakfast</option>
+								<option value="lunch">Lunch</option>
+								<option value="dinner">Dinner</option>
+							</select>
+						</div>
+
+						<!-- Star Rating -->
+						<div class="form-group">
+							<label>Overall Rating *</label>
+							<div class="star-rating">
+								<input
+									type="radio"
+									id="star1"
+									name="rating"
+									value="1"
+									required
+								/>
+								<label for="star1">★</label>
+
+								<input type="radio" id="star2" name="rating" value="2" />
+								<label for="star2">★</label>
+
+								<input type="radio" id="star3" name="rating" value="3" />
+								<label for="star3">★</label>
+
+								<input type="radio" id="star4" name="rating" value="4" />
+								<label for="star4">★</label>
+
+								<input type="radio" id="star5" name="rating" value="5" />
+								<label for="star5">★</label>
+							</div>
+						</div>
+
+						<!-- Review Text -->
+						<div class="form-group">
+							<label for="review-text">Review Text *</label>
+							<textarea
+								id="review-text"
+								name="review-text"
+								placeholder="Share your thoughts about the meal..."
+								rows="6"
+								required
+							></textarea>
+						</div>
+
+						<!-- Item-Specific Reviews (Dictionary of items) -->
+						<div class="form-group">
+							<fieldset>
+								<legend>Rate Individual Items (Optional)</legend>
+
+								<div class="item-review">
+									<label for="sausage">Sausage:</label>
+									<textarea
+										id="sausage"
+										name="items[sausage]"
+										placeholder="Comment on sausage..."
+										rows="3"
+									></textarea>
+								</div>
+
+								<div class="item-review">
+									<label for="cereal">Cereal:</label>
+									<textarea
+										id="cereal"
+										name="items[cereal]"
+										placeholder="Comment on cereal..."
+										rows="3"
+									></textarea>
+								</div>
+
+								<div class="item-review">
+									<label for="other">Other Items:</label>
+									<textarea
+										id="other"
+										name="items[other]"
+										placeholder="Comment on other items..."
+										rows="3"
+									></textarea>
+								</div>
+							</fieldset>
+						</div>
+
+						<!-- Image Upload -->
+						<div class="form-group">
+							<label for="image-upload">Upload Image (Optional)</label>
+							<input
+								type="file"
+								id="image-upload"
+								name="image"
+								accept="image/*"
+							/>
+							<small>Supported formats: JPG, PNG, GIF (Max 5MB)</small>
+						</div>
+
+						<!-- Display on Homepage -->
+						<div class="form-group">
+							<fieldset>
+								<legend>Display on Homepage? *</legend>
+								<div class="radio-group">
+									<input
+										type="radio"
+										id="display-yes"
+										name="can-display"
+										value="true"
+										required
+									/>
+									<label for="display-yes">Yes, show my review</label>
+								</div>
+								<div class="radio-group">
+									<input
+										type="radio"
+										id="display-no"
+										name="can-display"
+										value="false"
+									/>
+									<label for="display-no">No, keep it private</label>
+								</div>
+							</fieldset>
+						</div>
+
+						<!-- Submit Button -->
+						<div class="form-actions">
+							<button type="submit" class="btn btn-primary">
+								Submit Review
+							</button>
+							<button type="reset" class="btn btn-secondary">Clear Form</button>
+						</div>
+					</form>
+				</section>
+			</main>
+
+			<!-- Footer -->
+			<footer>
+				<p>&copy; 2026 Wellesley Fresher. All rights reserved.</p>
+			</footer>
+		</div>
+
+		<script src="review.js"></script>
+	</body>
+</html>
