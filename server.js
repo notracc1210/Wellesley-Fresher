@@ -208,7 +208,7 @@ app.post("/submit-review", async (req, res) => {
 		}
 
 		// Get form data
-		const { diningHall, rating, reviewText, category, anonymous } = req.body;
+		const { diningHall, rating, reviewText, category, anonymous, display} = req.body;
 
 		// Validation
 		const errors = [];
@@ -240,7 +240,7 @@ app.post("/submit-review", async (req, res) => {
 			category: category,
 			//isAnonymous: anonymous === "on", //al
 			//canDisplay: display = true, // Default: show on homepage
-			isAnonymous: anonymous = true,
+			//isAnonymous: anonymous = true,
 			canDisplay: display === "on",
 			dateUploaded: new Date(),
 		};
