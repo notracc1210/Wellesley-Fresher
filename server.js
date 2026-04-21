@@ -198,6 +198,66 @@ app.get("/review-form", (req, res) => {
 	});
 });
 
+// posting to database/submission route
+app.post("/submit-review", async (req, res) => {
+	try {
+		// Check if user is logged in
+		if (!req.session.logged_in) {
+			req.flash("error", "You must be logged in to submit a review.");
+			return res.redirect("/login");
+		}
+
+		// Get form data
+		const { diningHall, rating, reviewText, category, anonymous } = req.body;
+
+		// Validation
+		const errors = [];
+		if (!diningHall) errors.push("Please select a dining hall");
+		if (!rating) errors.push("Please select a rating");
+		if (!reviewText) errors.push("Please enter a review");
+		if (reviewText.length < 5) errors.push("Review must be at least 10 characters");
+		if (reviewText.length > 500) errors.push("Review must not exceed 500 characters");
+		if (!category) errors.push("Please select a category");
+
+		// If validation fails, show errors
+		if (errors.length > 0) {
+			req.flash("error", errors.join(" | "));
+			return res.render("review-form.ejs", {
+				logged_in: req.session.logged_in,
+				email: req.session.email,
+				errors: errors
+			});
+		}
+
+		// Connect to database and insert review
+		const db = await Connection.open(mongoUri, DB);
+		
+		const newReview = {
+			userEmail: req.session.email,
+			diningHall: diningHall,
+			rating: parseInt(rating),
+			reviewText: reviewText,
+			category: category,
+			isAnonymous: anonymous === "on", // checkbox sends 'on' when checked
+			canDisplay: true, // Default: show on homepage
+			dateUploaded: new Date(),
+		};
+
+		// Insert into database
+		const result = await db.collection(REVIEWS).insertOne(newReview);
+
+		console.log(`Review inserted with ID: ${result.insertedId}`);
+		req.flash("info", "Thank you! Your review has been submitted successfully!");
+		
+		return res.redirect("/home");
+
+	} catch (error) {
+		console.error("Error submitting review:", error);
+		req.flash("error", `Form submission error: ${error}`);
+		return res.redirect("/review-form");
+	}
+});
+
 /**
 async function getNextUid(counterName) {
     const db = await Connection.open(mongoUri, DB);
