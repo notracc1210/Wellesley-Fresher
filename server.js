@@ -238,8 +238,8 @@ app.post("/submit-review", async (req, res) => {
 			rating: parseInt(rating),
 			reviewText: reviewText,
 			category: category,
-			isAnonymous: anonymous === "on", // checkbox sends 'on' when checked
-			canDisplay: true, // Default: show on homepage
+			isAnonymous: true, // Default: users anyonymous
+			canDisplay: === "on", // Choose whether to display, display if 'on' 
 			dateUploaded: new Date(),
 		};
 
