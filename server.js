@@ -198,9 +198,9 @@ app.get("/review-form", (req, res) => {
 	});
 });
 
-app.get("/submit-review", async (req,res) => {
+app.get("/submit-review", async (req, res) => {
 	res.render("submit-review.ejs");
-})
+});
 
 // posting to database/submission route
 app.post("/submit-review", async (req, res) => {
@@ -212,15 +212,25 @@ app.post("/submit-review", async (req, res) => {
 		}
 
 		// Get form data
-		const { diningHall, rating, reviewText, category, anonymous, display} = req.body;
+		const {
+			diningHall,
+			rating,
+			reviewText,
+			category,
+			anonymous,
+			display,
+			image,
+		} = req.body;
 
 		// Validation
 		const errors = [];
 		if (!diningHall) errors.push("Please select a dining hall");
 		if (!rating) errors.push("Please select a rating");
 		if (!reviewText) errors.push("Please enter a review");
-		if (reviewText.length < 5) errors.push("Review must be at least 10 characters");
-		if (reviewText.length > 500) errors.push("Review must not exceed 500 characters");
+		if (reviewText.length < 5)
+			errors.push("Review must be at least 10 characters");
+		if (reviewText.length > 500)
+			errors.push("Review must not exceed 500 characters");
 		if (!category) errors.push("Please select a category");
 
 		// If validation fails, show errors
@@ -229,13 +239,13 @@ app.post("/submit-review", async (req, res) => {
 			return res.render("review-form.ejs", {
 				logged_in: req.session.logged_in,
 				email: req.session.email,
-				errors: errors
+				errors: errors,
 			});
 		}
 
 		// Connect to database and insert review
 		const db = await Connection.open(mongoUri, DB);
-		
+
 		const newReview = {
 			userEmail: req.session.email,
 			diningHall: diningHall,
@@ -247,16 +257,19 @@ app.post("/submit-review", async (req, res) => {
 			//isAnonymous: anonymous = true,
 			canDisplay: display === "on",
 			dateUploaded: new Date(),
+			image: image || null, // Store image URL or null if not provided
 		};
 
 		// Insert into database
 		const result = await db.collection(REVIEWS).insertOne(newReview);
 
 		console.log(`Review inserted with ID: ${result.insertedId}`);
-		req.flash("info", "Thank you! Your review has been submitted successfully!");
-		
-		return res.redirect("/submit-review");
+		req.flash(
+			"info",
+			"Thank you! Your review has been submitted successfully!",
+		);
 
+		return res.redirect("/submit-review");
 	} catch (error) {
 		console.error("Error submitting review:", error);
 		req.flash("error", `Form submission error: ${error}`);

@@ -86,7 +86,7 @@
             <div class="card-body p-5">
               <h2 class="card-title mb-4">Review Form</h2>
               
-              <form method="POST" action="/submit-review">
+              <form method="POST" action="/submit-review" enctype="multipart/form-data">
                 <!-- Dining Hall Selection -->
                 <div class="mb-4">
                   <label for="diningHall" class="form-label fw-bold">Dining Hall</label>
@@ -130,16 +130,31 @@
                 </div>
 
                 <!-- Image Upload -->
-						<div class="form-group">
-							<label for="image-upload">Upload Image (Optional)</label>
-							<input
-								type="file"
-								id="image-upload"
-								name="image"
-								accept="image/*"
-							/>
-							<small>Supported formats: JPG, PNG, GIF (Max 5MB)</small>
-						</div>
+						  <!-- <div class="form-group">
+							  <label for="image-upload">Upload Image (Optional)</label>
+							  <input
+								  type="file"
+								  id="image-upload"
+								  name="image"
+								  accept="image/*"
+							  />
+							  <small>Supported formats: JPG, PNG, GIF (Max 5MB)</small>
+						  </div> -->
+
+                <div class="mb-4">
+                  <label for="image-upload" class="form-label fw-bold">Upload Image (Optional)</label>
+                  <input
+                    type="file"
+                    class="form-control form-control-lg"
+                    id="image-upload"
+                    name="image"
+                    accept="image/jpeg,image/png,image/gif"
+                  />
+                  <small class="form-text text-muted">
+                    Supported formats: JPG, PNG, GIF (Max 5MB)
+                  </small>
+                  <div id="file-error" class="text-danger small mt-2" style="display:none;"></div>
+                </div>
 
                 <!-- Category -->
                 <div class="mb-4">
