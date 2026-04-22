@@ -198,6 +198,10 @@ app.get("/review-form", (req, res) => {
 	});
 });
 
+app.get("/submit-review", async (req,res) => {
+	res.render("submit-review.ejs");
+})
+
 // posting to database/submission route
 app.post("/submit-review", async (req, res) => {
 	try {
@@ -251,7 +255,7 @@ app.post("/submit-review", async (req, res) => {
 		console.log(`Review inserted with ID: ${result.insertedId}`);
 		req.flash("info", "Thank you! Your review has been submitted successfully!");
 		
-		return res.redirect("/home");
+		return res.redirect("/submit-review");
 
 	} catch (error) {
 		console.error("Error submitting review:", error);
