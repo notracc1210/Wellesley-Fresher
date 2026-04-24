@@ -65,6 +65,7 @@ app.get("/home", async (req, res) => {
 			{ canDisplay: true },
 			{ projection: { reviewText: 1, diningHallName: 1, dateUploaded: 1 } },
 		)
+		.sort({dateUploaded: -1})
 		.toArray();
 
 	// if not enough reviews, add placeholders
