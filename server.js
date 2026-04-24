@@ -258,7 +258,7 @@ app.post("/signup", async (req, res) => {
 		if (existingStaff) {
 			req.flash(
 				"error",
-				"If you are Wellesley Fresh staff, please log in directly.",
+				'If you are Wellesley Fresh staff, please <a href="/login">log in</a> directly.',
 			);
 			return res.redirect("/signup");
 		}
