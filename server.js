@@ -8,6 +8,9 @@ const cookieSession = require("cookie-session");
 const flash = require("express-flash");
 const bcrypt = require("bcrypt");
 
+const multer = require("multer");
+const fs = require("fs");
+
 // our modules loaded from cwd
 
 const { Connection } = require("./connection");
