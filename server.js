@@ -132,14 +132,19 @@ app.post("/login", async (req, res) => {
 });
 
 
-
-
 // staff page/dashboard
 app.get("/staff", async (req, res) => {
+	const db = await Connection.open(mongoUri, DB);
 	// if (!req.session.logged_in) {
 	// 	req.flash("error", "You must be logged in to view the staff dashboard.");
 	// 	return res.redirect("/login");
 	// }
+	const email = req.session.email;
+	var existingStaff = await db.collection(STAFF).findOne({ email: email });
+	if(!existingStaff){
+		res.redirect("/home");
+	}
+
 	return res.render("staff-dashboard.ejs", {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
