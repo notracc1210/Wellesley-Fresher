@@ -101,7 +101,12 @@ app.post("/login", async (req, res) => {
 		console.log("Hello: " + req.body);
 		const db = await Connection.open(mongoUri, DB);
 		var existingUser = await db.collection(STUDENTS).findOne({ email: email });
-		console.log("user", existingUser);
+		var existingStaff = await db.collection(STAFF).findOne({ email: email });
+		if(existingStaff){
+			req.session.email = email;
+			req.session.logged_in = true;
+			return res.redirect("/staff");
+		}
 		if (!existingUser) {
 			console.log("Username does not exist - try again.");
 			req.flash("error", "Username does not exist - try again.");
@@ -126,57 +131,11 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-// begin staff login routes
-app.get("/staff-login", (req, res) => {
-	return res.render("staff-login.ejs");
-});
 
-app.post("/staff-login", async (req, res) => {
-	try {
-		const email = req.body.email;
-		const password = req.body.password;
-		console.log("Hello: " + req.body);
 
-		const db = await Connection.open(mongoUri, DB);
-		var existingStaff = await db.collection(STAFF).findOne({ email: email });
-
-		if (!existingStaff) {
-			console.log("Staff account does not exist - try again.");
-			req.flash("error", "Staff account does not exist - try again.");
-			return res.redirect("/staff-login"); // redirect to staff login page, not home
-		}
-
-		const match = await bcrypt.compare(password, existingStaff.password);
-		if (!match) {
-			console.log("Email or password incorrect - try again.");
-			req.flash("error", "Email or password incorrect - try again.");
-			return res.redirect("/staff-login");
-		}
-
-		req.flash("info", "successfully logged in as staff: " + email);
-		req.session.email = email;
-		req.session.logged_in = true;
-		req.session.isStaff = true;
-		console.log("staff login as", email);
-		return res.redirect("/staff");
-	} catch (error) {
-		console.log(error);
-		req.flash("error", `Form submission error: ${error}`);
-		return res.redirect("/staff-login");
-	}
-});
-
-// function to confirm user is staff, for staff dashboard
-function isStaff(req, res, next) {
-	if (!req.session.logged_in || !req.session.isStaff) {
-		req.flash("error", "You must be logged in to view the staff dashboard.");
-		return res.redirect("/home");
-	}
-	next();
-}
 
 // staff page/dashboard
-app.get("/staff", isStaff, async (req, res) => {
+app.get("/staff", async (req, res) => {
 	// if (!req.session.logged_in) {
 	// 	req.flash("error", "You must be logged in to view the staff dashboard.");
 	// 	return res.redirect("/login");
@@ -287,13 +246,21 @@ app.post("/signup", async (req, res) => {
 		const email = req.body.email;
 		const password = req.body.password;
 		const db = await Connection.open(mongoUri, DB);
-		var existingUser = await db.collection(STUDENTS).findOne({ email: email });
-		if (existingUser) {
+		var existingStudent = await db.collection(STUDENTS).findOne({ email: email });
+		var existingStaff = await db.collection(STAFF).findOne({ email: email });
+		if (existingStudent) {
 			req.flash(
 				"error",
 				"Login already exists - please try logging in instead.",
 			);
-			return res.redirect("/");
+			return res.redirect("/signup");
+		}
+		if (existingStaff) {
+			req.flash(
+				"error",
+				"If you are Wellesley Fresh staff, please log in directly.",
+			);
+			return res.redirect("/signup");
 		}
 		const hash = await bcrypt.hash(password, ROUNDS);
 		await db.collection(STUDENTS).insertOne({
