@@ -53,6 +53,7 @@ const STUDENTS = "students";
 const REVIEWS = "reviews";
 const STAFF = "staff";
 const IMAGES = "images";
+const COUNTERS = "counters";
 
 const ROUNDS = 10;
 
@@ -63,7 +64,7 @@ app.get("/home", async (req, res) => {
 		.collection(REVIEWS)
 		.find(
 			{ canDisplay: true },
-			{ projection: { reviewText: 1, diningHallName: 1, dateUploaded: 1 } },
+			{ projection: { reviewText: 1, diningHall: 1, dateUploaded: 1 } },
 		)
 		.sort({dateUploaded: -1})
 		.toArray();
@@ -135,19 +136,35 @@ app.post("/login", async (req, res) => {
 // staff page/dashboard
 app.get("/staff", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
-	// if (!req.session.logged_in) {
-	// 	req.flash("error", "You must be logged in to view the staff dashboard.");
-	// 	return res.redirect("/login");
-	// }
+
 	const email = req.session.email;
 	var existingStaff = await db.collection(STAFF).findOne({ email: email });
 	if(!existingStaff){
-		res.redirect("/home");
+		return res.redirect("/home");
 	}
+
+	const filter = {};
+
+	if(req.query.diningHall){
+		const selectedDiningHalls = Array.isArray(req.query.diningHall) ? req.query.diningHall : [req.query.diningHall];
+		filter.diningHall = {$in: selectedDiningHalls};
+	}
+
+	const reviews = await db.collection(REVIEWS)
+		.find(filter)
+		.sort({reviewID: -1})
+		.toArray();
+
 
 	return res.render("staff-dashboard.ejs", {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
+		reviews,
+		selectedDiningHalls: req.query.diningHall
+			? Array.isArray(req.query.diningHall)
+				? req.query.diningHall
+				: [req.query.diningHall]
+			: []
 	});
 });
 
@@ -167,6 +184,16 @@ app.get("/submit-review", async (req,res) => {
 	res.render("submit-review.ejs");
 })
 
+async function incrCounter(counters, key){
+	let result = await counters.findOneAndUpdate(
+		{collection: key},
+		{$inc: {counter: 1}},
+		{returnDocument: "after"}
+	);
+
+	return result.counter;
+}
+
 // posting to database/submission route
 app.post("/submit-review", async (req, res) => {
 	try {
@@ -184,7 +211,7 @@ app.post("/submit-review", async (req, res) => {
 		if (!diningHall) errors.push("Please select a dining hall");
 		if (!rating) errors.push("Please select a rating");
 		if (!reviewText) errors.push("Please enter a review");
-		if (reviewText.length < 5) errors.push("Review must be at least 10 characters");
+		if (reviewText.length < 5) errors.push("Review must be at least 5 characters");
 		if (reviewText.length > 500) errors.push("Review must not exceed 500 characters");
 		if (!category) errors.push("Please select a category");
 
@@ -200,24 +227,23 @@ app.post("/submit-review", async (req, res) => {
 
 		// Connect to database and insert review
 		const db = await Connection.open(mongoUri, DB);
-		
+		const counters = db.collection(COUNTERS);
+		let reviewID = await incrCounter(counters, "reviews");
+
 		const newReview = {
+			reviewID,
 			userEmail: req.session.email,
 			diningHall: diningHall,
 			rating: parseInt(rating),
 			reviewText: reviewText,
 			category: category,
-			//isAnonymous: anonymous === "on", //al
-			//canDisplay: display = true, // Default: show on homepage
-			//isAnonymous: anonymous = true,
 			canDisplay: display === "on",
 			dateUploaded: new Date(),
 		};
 
 		// Insert into database
-		const result = await db.collection(REVIEWS).insertOne(newReview);
+		await db.collection(REVIEWS).insertOne(newReview);
 
-		console.log(`Review inserted with ID: ${result.insertedId}`);
 		req.flash("info", "Thank you! Your review has been submitted successfully!");
 		
 		return res.redirect("/submit-review");
@@ -228,19 +254,6 @@ app.post("/submit-review", async (req, res) => {
 		return res.redirect("/review-form");
 	}
 });
-
-/**
-async function getNextUid(counterName) {
-    const db = await Connection.open(mongoUri, DB);
-    const doc = await db.collection("counters").findOneAndUpdate(
-        {_id: counterName},
-        {$inc:{seq: 1}},
-        {returnDocument: "after"}
-    );
-
-    return doc.seq;
-}
-    */
 
 app.get("/signup", (req, res) => {
 	return res.render("signup.ejs");

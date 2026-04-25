@@ -40,14 +40,7 @@
             <li><a href="/review-form" class="nav-link px-2 text-white">Feedback</a></li>
             <li><a href="https://dish.avifoodsystems.com/wellesley" class="nav-link px-2 text-white">Meals</a></li>
           </ul>
-          <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-            <input
-              type="search"
-              class="form-control form-control-dark text-bg-dark"
-              placeholder="Search..."
-              aria-label="Search"
-            />
-          </form>
+          
 
           <% if(!logged_in){ %>
             <div class="text-end">
@@ -57,14 +50,14 @@
               <button type="button" class="btn btn-warning" onclick="window.location.href='/signup'">Sign-up</button>
             </div>
           <% } else{ %>
-            <div>
-              <p><%= email %></p>
-              <form action="/logout" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-outline-light">
+            <div class="d-flex gap-2">
+              <p class="pt-3"><%= email %></p>
+              <form action="/logout" method="POST">
+                <button type="submit" class="btn btn-outline-light mt-2">
                   Logout
                 </button>
               </form>
-            </div>
+					</div>
           <% } %>
           
 
@@ -132,7 +125,7 @@
                   >
                     <use xlink:href="#geo-fill"></use>
                   </svg>
-                  <small><%= display_reviews[0].diningHallName %></small>
+                  <small><%= display_reviews[0].diningHall %></small>
                 </li>
                 <li class="d-flex align-items-center">
                   <svg
@@ -183,7 +176,7 @@
                   >
                     <use xlink:href="#geo-fill"></use>
                   </svg>
-                  <small><%= display_reviews[1].diningHallName %></small>
+                  <small><%= display_reviews[1].diningHall %></small>
                 </li>
                 <li class="d-flex align-items-center">
                   <svg
@@ -230,7 +223,7 @@
                   >
                     <use xlink:href="#geo-fill"></use>
                   </svg>
-                  <small><%= display_reviews[2].diningHallName %></small>
+                  <small><%= display_reviews[2].diningHall %></small>
                 </li>
                 <li class="d-flex align-items-center">
                   <svg
