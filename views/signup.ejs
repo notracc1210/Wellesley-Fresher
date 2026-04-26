@@ -109,7 +109,7 @@
                     <% if (messages.error) { %>
                         <ul>
                         <% messages.error.forEach( msg => {%>
-                            <li><%= msg %></li>
+                            <li><%- msg %></li>
                         <% }) %>
                         </ul>
                     <% } %>
