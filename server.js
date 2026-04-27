@@ -139,23 +139,81 @@ app.post("/login", async (req, res) => {
 // staff page/dashboard
 app.get("/staff", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
-
 	const email = req.session.email;
 	var existingStaff = await db.collection(STAFF).findOne({ email: email });
 	if(!existingStaff){
 		return res.redirect("/home");
 	}
 
+	const selectedDiningHalls = req.query.diningHall
+		? Array.isArray(req.query.diningHall)
+		? req.query.diningHall
+		: [req.query.diningHall]
+		: [];
+
+	const selectedMealTime = req.query.mealTime
+		? Array.isArray(req.query.mealTime)
+		? req.query.mealTime
+		: [req.query.mealTime]
+		: [];
+
 	const filter = {};
 
 	if(req.query.diningHall){
-		const selectedDiningHalls = Array.isArray(req.query.diningHall) ? req.query.diningHall : [req.query.diningHall];
 		filter.diningHall = {$in: selectedDiningHalls};
 	}
+
+	if(req.query.mealTime){
+		filter.mealTime = {$in: selectedMealTime};
+	}
+
+	const startDate = req.query.startDate || "";
+	const endDate = req.query.endDate || "";
+
+	if (startDate || endDate) {
+		filter.dateUploaded = {};
+
+	if (startDate) {
+		filter.dateUploaded.$gte = new Date(startDate);
+	}
+
+	if (endDate) {
+		const end = new Date(endDate);
+		end.setDate(end.getDate() + 1);
+		filter.dateUploaded.$lt = end;
+	}
+	}
+
+	function pageUrl(pageNum) {
+		const params = new URLSearchParams(req.query);
+
+		selectedDiningHalls.forEach(hall => {
+			params.append("diningHall", hall);
+		});
+
+		selectedMealTime.forEach(time => {
+			params.append("mealTime", time);
+		});
+
+		if (startDate) params.set("startDate", startDate);
+		if (endDate) params.set("endDate", endDate);
+
+		params.set("page", pageNum);
+		return "/staff?" + params.toString();
+	}
+
+	let page = parseInt(req.query.page) || 1;
+	const perPage = 5;
+
+	let totalReviews = await db.collection(REVIEWS).countDocuments(filter);
+	let totalPages = Math.ceil(totalReviews / perPage);
 
 	const reviews = await db.collection(REVIEWS)
 		.find(filter)
 		.sort({reviewID: -1})
+		.sort({dateUploaded: -1})
+		.skip((page - 1) * perPage)
+  		.limit(perPage)
 		.toArray();
 
 
@@ -163,13 +221,39 @@ app.get("/staff", async (req, res) => {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
 		reviews,
-		selectedDiningHalls: req.query.diningHall
-			? Array.isArray(req.query.diningHall)
-				? req.query.diningHall
-				: [req.query.diningHall]
-			: []
+		page,
+  		totalPages,
+		pageUrl,
+		selectedDiningHalls,
+		selectedMealTime,
+		startDate,
+		endDate
 	});
 });
+
+app.get("/staff/review-detail/:reviewID", async (req, res) => {
+	const db = await Connection.open(mongoUri, DB);
+
+	var existingStaff = await db.collection(STAFF).findOne({ email: req.session.email });
+	if(!existingStaff){
+		return res.redirect("/home");
+	}
+
+	const reviewID = parseInt(req.params.reviewID);
+
+	const review = await db.collection(REVIEWS).findOne({reviewID: reviewID});
+	if (!review) {
+		req.flash("error", "Review not found.");
+		return res.redirect("/staff");
+	}
+
+	return res.render("review-detail.ejs", {
+		logged_in: req.session.logged_in,
+		email: req.session.email,
+		review,
+		reviewID
+	});
+})
 
 // review submission form, check login functionality
 app.get("/review-form", (req, res) => {
@@ -207,6 +291,7 @@ app.post("/submit-review", async (req, res) => {
 		}
 
 		// Get form data
+<<<<<<< HEAD
 		const {
 			diningHall,
 			rating,
@@ -216,10 +301,14 @@ app.post("/submit-review", async (req, res) => {
 			display,
 			image,
 		} = req.body;
+=======
+		const { diningHall, mealTime, rating, reviewText, category, anonymous, display} = req.body;
+>>>>>>> 1fe3a30cb5cc707758e50335392e9267c81c5058
 
 		// Validation
 		const errors = [];
 		if (!diningHall) errors.push("Please select a dining hall");
+		if (!mealTime) errors.push("Please select your meal time");
 		if (!rating) errors.push("Please select a rating");
 		if (!reviewText) errors.push("Please enter a review");
 <<<<<<< HEAD
@@ -255,6 +344,7 @@ app.post("/submit-review", async (req, res) => {
 			reviewID,
 			userEmail: req.session.email,
 			diningHall: diningHall,
+			mealTime: mealTime,
 			rating: parseInt(rating),
 			reviewText: reviewText,
 			category: category,

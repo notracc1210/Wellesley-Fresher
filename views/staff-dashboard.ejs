@@ -45,7 +45,6 @@
 						<li>
 							<a href="#" class="nav-link px-2 text-white">Review Analytics</a>
 						</li>
-						<li><a href="#" class="nav-link px-2 text-white">Settings</a></li>
 					</ul>
 					
 
@@ -75,8 +74,9 @@
 							aria-label="Search"
 						/>
 			</form>
-			<form method="GET" action="/staff" class="d-flex gap-3">
-				<div class="dropdown">
+			<form method="GET" action="/staff" class="d-flex flex-wrap gap-3 align-items-center">
+				<input type="hidden" name="page" value="1">
+				<div class="dropdown-DiningHall">
 					<button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">Dining Hall</button>
 					<ul class="dropdown-menu p-3" data-bs-auto-close="outside">
 						<li>
@@ -97,15 +97,92 @@
 
 						<li>
 							<label class="dropdown-item">
-								<input type="checkbox" name="diningHall" value="Lulu Chow Wang"
-										<%= selectedDiningHalls.includes("Lulu Chow Wang") ? "checked" : "" %>>
+								<input type="checkbox" name="diningHall" value="Lulu Chow Wang Center"
+										<%= selectedDiningHalls.includes("Lulu Chow Wang Center") ? "checked" : "" %>>
 										Lulu
+							</label>
+						</li>
+
+						<li>
+							<label class="dropdown-item">
+								<input type="checkbox" name="diningHall" value="Stone Davis"
+										<%= selectedDiningHalls.includes("Stone Davis") ? "checked" : "" %>>
+										Stone Davis
+							</label>
+						</li>
+
+						<li>
+							<label class="dropdown-item">
+								<input type="checkbox" name="diningHall" value="Collins Cafe"
+										<%= selectedDiningHalls.includes("Collins Cafe") ? "checked" : "" %>>
+										Collins Cafe
+							</label>
+						</li>
+
+						<li>
+							<label class="dropdown-item">
+								<input type="checkbox" name="diningHall" value="Saxbys"
+										<%= selectedDiningHalls.includes("Saxbys") ? "checked" : "" %>>
+										Saxbys
 							</label>
 						</li>
 					</ul>
 				</div>
 
-				<button type="submit" class="btn btn-primary ">
+				<div class="dropdown-MealTime">
+					<button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">Meal Time</button>
+					<ul class="dropdown-menu p-3" data-bs-auto-close="outside">
+						<li>
+							<label class="dropdown-item">
+								<input type="checkbox" name="mealTime" value="Breakfast"
+									<%= selectedMealTime.includes("Breakfast") ? "checked" : "" %>>
+									Breakfast
+							</label>
+						</li>
+
+						<li>
+							<label class="dropdown-item">
+								<input type="checkbox" name="mealTime" value="Brunch"
+									<%= selectedMealTime.includes("Brunch") ? "checked" : "" %>>
+									Brunch
+							</label>
+						</li>
+
+						<li>
+							<label class="dropdown-item">
+								<input type="checkbox" name="mealTime" value="Lunch"
+									<%= selectedMealTime.includes("Lunch") ? "checked" : "" %>>
+									Lunch
+							</label>
+						</li>
+
+						<li>
+							<label class="dropdown-item">
+								<input type="checkbox" name="mealTime" value="Dinner"
+									<%= selectedMealTime.includes("Dinner") ? "checked" : "" %>>
+									Dinner
+							</label>
+						</li>
+					</ul>
+				</div>
+
+				<input
+					type="date"
+					name="startDate"
+					value="<%= startDate %>"
+					class="form-control"
+					style="width: 130px;"
+					/>
+
+					<input
+					type="date"
+					name="endDate"
+					value="<%= endDate %>"
+					class="form-control"
+					style="width: 130px;"
+					/>
+
+				<button type="submit" class="btn btn-primary">
 					Apply filters
 				</button>
 			</form>
@@ -118,18 +195,21 @@
 						>	
 							<div class="card-header">#<%= review.reviewID %></div>
 							<div class="d-flex flex-column h-100 p-5 pb-3 text-dark">
-								<p class=" ">⭐️<%= review.rating %></p>
-								<p class=" display-6"><%= review.reviewText %></p>
+								<p style="font-size: 15px;">⭐️<%= review.rating %></p>
+								<p style="font-size: 22px;"><%= review.reviewText %></p>
 								<ul class="d-flex list-unstyled mt-auto">
+									<li class="d-flex align-items-center me-3">
+										<small><a href="/staff/review-detail/<%= review.reviewID %>">View details</a></small>
+									</li>
 									<li class="me-auto">
-										
 									</li>
 									<li class="d-flex align-items-center me-3">
-										
 										<small><%= review.diningHall %></small>
 									</li>
+									<li class="d-flex align-items-center me-3">
+										<small><%= review.mealTime %></small>
+									</li>
 									<li class="d-flex align-items-center">
-										
 										<small><%= new Date(review.dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %></small>
 									</li>
 								</ul>
@@ -138,6 +218,47 @@
 					</div>
 				<% }) %>
 				
+				<nav class="d-flex justify-content-center align-items-center gap-2 mt-4">
+					<% if (page > 1) { %>
+						<a class="btn btn-outline-dark" href="<%= pageUrl(page - 1) %>">←</a>
+					<% } else { %>
+						<button class="btn btn-outline-secondary" disabled>←</button>
+					<% } %>
+
+					<form method="GET" action="/staff" class="d-flex align-items-center gap-2">
+						<% selectedDiningHalls.forEach(hall => { %>
+							<input type="hidden" name="diningHall" value="<%= hall %>">
+						<% }) %>
+
+						<% selectedMealTime.forEach(time => { %>
+							<input type="hidden" name="mealTime" value="<%= time %>">
+						<% }) %>
+						<input type="hidden" name="startDate" value="<%= startDate %>">
+						<input type="hidden" name="endDate" value="<%= endDate %>">
+
+						<input
+						type="number"
+						name="page"
+						value="<%= page %>"
+						min="1"
+						max="<%= totalPages %>"
+						class="form-control text-center"
+						style="width: 80px;"
+						/>
+
+						<span>of <%= totalPages %></span>
+
+						<button type="submit" class="btn btn-primary">Go</button>
+					</form>
+
+					<% if (page < totalPages) { %>
+						<a class="btn btn-outline-dark" href="<%= pageUrl(page + 1) %>">
+						→
+						</a>
+					<% } else { %>
+						<button class="btn btn-outline-secondary" disabled>→</button>
+					<% } %>
+				</nav>
 			</div>
 		</div>
 	</body>
