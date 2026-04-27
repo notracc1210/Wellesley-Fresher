@@ -78,22 +78,13 @@
         </div>
       </div>
       <div class="overflow-hidden" style="max-height: 30vh">
-        <div class="container px-5">
-          <img
-            src="bootstrap-docs.png"
-            class="img-fluid border rounded-3 shadow-lg mb-4"
-            alt="Example image"
-            width="700"
-            height="500"
-            loading="lazy"
-          />
-        </div>
+        
       </div>
     </div>
 
     <div class="container px-4 py-5" id="custom-cards">
       <h2 class="pb-2 border-bottom">Recent Reviews</h2>
-      <div class="row row-cols-1 row-cols-lg-3 align-items-stretch g-4 py-5">
+      <div class="row row-cols-2 row-cols-lg-3 align-items-stretch g-4 py-5">
         <div class="col">
           <div
             class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
@@ -106,37 +97,10 @@
                 <%= display_reviews[0].reviewText %>
               </h3>
               <ul class="d-flex list-unstyled mt-auto">
-                <li class="me-auto">
-                  <img
-                    src="https://github.com/twbs.png"
-                    alt="Bootstrap"
-                    width="32"
-                    height="32"
-                    class="rounded-circle border border-white"
-                  />
-                </li>
                 <li class="d-flex align-items-center me-3">
-                  <svg
-                    class="bi me-2"
-                    width="1em"
-                    height="1em"
-                    role="img"
-                    aria-label="Location"
-                  >
-                    <use xlink:href="#geo-fill"></use>
-                  </svg>
                   <small><%= display_reviews[0].diningHall %></small>
                 </li>
                 <li class="d-flex align-items-center">
-                  <svg
-                    class="bi me-2"
-                    width="1em"
-                    height="1em"
-                    role="img"
-                    aria-label="Duration"
-                  >
-                    <use xlink:href="#calendar3"></use>
-                  </svg>
                   <small>
                     <%= new Date(display_reviews[0].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
                   </small>
@@ -148,7 +112,7 @@
         <div class="col">
           <div
             class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-2.jpg&quot;)"
+            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
           >
             <div
               class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
@@ -157,38 +121,13 @@
                 <%= display_reviews[1].reviewText %>
               </h3>
               <ul class="d-flex list-unstyled mt-auto">
-                <li class="me-auto">
-                  <img
-                    src="https://github.com/twbs.png"
-                    alt="Bootstrap"
-                    width="32"
-                    height="32"
-                    class="rounded-circle border border-white"
-                  />
-                </li>
                 <li class="d-flex align-items-center me-3">
-                  <svg
-                    class="bi me-2"
-                    width="1em"
-                    height="1em"
-                    role="img"
-                    aria-label="Location"
-                  >
-                    <use xlink:href="#geo-fill"></use>
-                  </svg>
                   <small><%= display_reviews[1].diningHall %></small>
                 </li>
                 <li class="d-flex align-items-center">
-                  <svg
-                    class="bi me-2"
-                    width="1em"
-                    height="1em"
-                    role="img"
-                    aria-label="Duration"
-                  >
-                    <use xlink:href="#calendar3"></use>
-                  </svg>
-                  <small><%= new Date(display_reviews[1].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %></small>
+                  <small>
+                    <%= new Date(display_reviews[1].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
+                  </small>
                 </li>
               </ul>
             </div>
@@ -197,51 +136,99 @@
         <div class="col">
           <div
             class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-3.jpg&quot;)"
+            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
           >
-            <div class="d-flex flex-column h-100 p-5 pb-3 text-shadow-1">
+            <div
+              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
+            >
               <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
                 <%= display_reviews[2].reviewText %>
               </h3>
               <ul class="d-flex list-unstyled mt-auto">
-                <li class="me-auto">
-                  <img
-                    src="https://github.com/twbs.png"
-                    alt="Bootstrap"
-                    width="32"
-                    height="32"
-                    class="rounded-circle border border-white"
-                  />
-                </li>
                 <li class="d-flex align-items-center me-3">
-                  <svg
-                    class="bi me-2"
-                    width="1em"
-                    height="1em"
-                    role="img"
-                    aria-label="Location"
-                  >
-                    <use xlink:href="#geo-fill"></use>
-                  </svg>
                   <small><%= display_reviews[2].diningHall %></small>
                 </li>
                 <li class="d-flex align-items-center">
-                  <svg
-                    class="bi me-2"
-                    width="1em"
-                    height="1em"
-                    role="img"
-                    aria-label="Duration"
-                  >
-                    <use xlink:href="#calendar3"></use>
-                  </svg>
-                  <small><%= new Date(display_reviews[2].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %></small>
+                  <small>
+                    <%= new Date(display_reviews[2].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
+                  </small>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>   
+        <div class="col">
+          <div
+            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
+            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
+          >
+            <div
+              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
+            >
+              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                <%= display_reviews[3].reviewText %>
+              </h3>
+              <ul class="d-flex list-unstyled mt-auto">
+                <li class="d-flex align-items-center me-3">
+                  <small><%= display_reviews[3].diningHall %></small>
+                </li>
+                <li class="d-flex align-items-center">
+                  <small>
+                    <%= new Date(display_reviews[3].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
+                  </small>
                 </li>
               </ul>
             </div>
           </div>
         </div>
-      </div>
+        <div class="col">
+          <div
+            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
+            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
+          >
+            <div
+              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
+            >
+              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                <%= display_reviews[4].reviewText %>
+              </h3>
+              <ul class="d-flex list-unstyled mt-auto">
+                <li class="d-flex align-items-center me-3">
+                  <small><%= display_reviews[4].diningHall %></small>
+                </li>
+                <li class="d-flex align-items-center">
+                  <small>
+                    <%= new Date(display_reviews[4].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
+                  </small>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div
+            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
+            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
+          >
+            <div
+              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
+            >
+              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                <%= display_reviews[5].reviewText %>
+              </h3>
+              <ul class="d-flex list-unstyled mt-auto">
+                <li class="d-flex align-items-center me-3">
+                  <small><%= display_reviews[5].diningHall %></small>
+                </li>
+                <li class="d-flex align-items-center">
+                  <small>
+                    <%= new Date(display_reviews[5].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
+                  </small>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>         
     </div>
   </body>
 </html>
