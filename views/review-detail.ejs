@@ -96,6 +96,14 @@
                 </tr>
             </tbody>
           </table>
+		  <% if (review.imagePath) { %>
+			<img
+				src="<%= review.imagePath %>"
+				alt="Uploaded review image"
+				class="img-fluid rounded my-3"
+				style="max-width: 400px;"
+			>
+		<% } %>
 		</div>
 	</body>
 </html>

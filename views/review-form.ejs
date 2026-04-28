@@ -86,7 +86,7 @@
             <div class="card-body p-5">
               <h2 class="card-title mb-4">Review Form</h2>
               
-              <form method="POST" action="/submit-review">
+              <form method="POST" action="/submit-review" enctype="multipart/form-data">
                 <!-- Dining Hall Selection -->
                 <div class="mb-4">
                   <label for="diningHall" class="form-label fw-bold">Dining Hall</label>
@@ -153,15 +153,16 @@
                   </select>
                 </div>
 
-                <!-- Anonymous Toggle
                 <div class="mb-4">
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="anonymous" name="anonymous">
-                    <label class="form-check-label" for="anonymous">
-                      Post as anonymous
-                    </label>
-                  </div>
-                </div> -->
+                  <label for="reviewImage" class="form-label fw-bold">Upload an Image</label>
+                  <input
+                    class="form-control form-control-lg"
+                    type="file"
+                    id="reviewImage"
+                    name="reviewImage"
+                    accept="image/*"
+                  >
+              </div>
 
                 <!-- 'Can Display' -->
                 <div class="mb-4">

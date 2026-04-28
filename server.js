@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const flash = require("express-flash");
 const bcrypt = require("bcrypt");
+const multer = require("multer");
 
 // our modules loaded from cwd
 
@@ -41,6 +42,9 @@ app.use(
 	}),
 );
 app.use(flash());
+
+app.use(express.static("public"));
+
 
 const mongoUri = cs304.getMongoUri();
 
@@ -252,6 +256,32 @@ app.get("/staff/review-detail/:reviewID", async (req, res) => {
 	});
 })
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "public/images");
+    },
+    filename: function (req, file, cb) {
+        const uniqueName = Date.now() + "-" + file.originalname;
+        cb(null, uniqueName);
+    }
+});
+
+const fileFilter = function (req, file, cb) {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only image files are allowed."), false);
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 20 * 1024 * 1024
+    }
+});
+
 // review submission form, check login functionality
 app.get("/review-form", (req, res) => {
 	if (!req.session.logged_in) {
@@ -279,7 +309,7 @@ async function incrCounter(counters, key){
 }
 
 // posting to database/submission route
-app.post("/submit-review", async (req, res) => {
+app.post("/submit-review", upload.single("reviewImage"), async (req, res) => {
 	try {
 		// Check if user is logged in
 		if (!req.session.logged_in) {
@@ -289,6 +319,12 @@ app.post("/submit-review", async (req, res) => {
 
 		// Get form data
 		const { diningHall, mealTime, rating, reviewText, category, anonymous, display} = req.body;
+
+		let imagePath = null;
+
+		if (req.file) {
+			imagePath = "/images/" + req.file.filename;
+		}
 
 		// Validation
 		const errors = [];
@@ -323,6 +359,7 @@ app.post("/submit-review", async (req, res) => {
 			rating: parseInt(rating),
 			reviewText: reviewText,
 			category: category,
+			imagePath: imagePath,
 			canDisplay: display === "on",
 			dateUploaded: new Date(),
 		};
