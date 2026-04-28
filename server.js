@@ -69,7 +69,7 @@ app.get("/home", async (req, res) => {
 			{ canDisplay: true },
 			{ projection: { reviewText: 1, diningHall: 1, dateUploaded: 1 } },
 		)
-		.sort({dateUploaded: -1})
+		.sort({ dateUploaded: -1 })
 		.toArray();
 
 	// if not enough reviews, add placeholders
@@ -106,7 +106,7 @@ app.post("/login", async (req, res) => {
 		const db = await Connection.open(mongoUri, DB);
 		var existingUser = await db.collection(STUDENTS).findOne({ email: email });
 		var existingStaff = await db.collection(STAFF).findOne({ email: email });
-		if(existingStaff){
+		if (existingStaff) {
 			req.session.email = email;
 			req.session.logged_in = true;
 			return res.redirect("/staff");
@@ -135,36 +135,35 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-
 // staff page/dashboard
 app.get("/staff", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
 	const email = req.session.email;
 	var existingStaff = await db.collection(STAFF).findOne({ email: email });
-	if(!existingStaff){
+	if (!existingStaff) {
 		return res.redirect("/home");
 	}
 
 	const selectedDiningHalls = req.query.diningHall
 		? Array.isArray(req.query.diningHall)
-		? req.query.diningHall
-		: [req.query.diningHall]
+			? req.query.diningHall
+			: [req.query.diningHall]
 		: [];
 
 	const selectedMealTime = req.query.mealTime
 		? Array.isArray(req.query.mealTime)
-		? req.query.mealTime
-		: [req.query.mealTime]
+			? req.query.mealTime
+			: [req.query.mealTime]
 		: [];
 
 	const filter = {};
 
-	if(req.query.diningHall){
-		filter.diningHall = {$in: selectedDiningHalls};
+	if (req.query.diningHall) {
+		filter.diningHall = { $in: selectedDiningHalls };
 	}
 
-	if(req.query.mealTime){
-		filter.mealTime = {$in: selectedMealTime};
+	if (req.query.mealTime) {
+		filter.mealTime = { $in: selectedMealTime };
 	}
 
 	const startDate = req.query.startDate || "";
@@ -173,25 +172,25 @@ app.get("/staff", async (req, res) => {
 	if (startDate || endDate) {
 		filter.dateUploaded = {};
 
-	if (startDate) {
-		filter.dateUploaded.$gte = new Date(startDate);
-	}
+		if (startDate) {
+			filter.dateUploaded.$gte = new Date(startDate);
+		}
 
-	if (endDate) {
-		const end = new Date(endDate);
-		end.setDate(end.getDate() + 1);
-		filter.dateUploaded.$lt = end;
-	}
+		if (endDate) {
+			const end = new Date(endDate);
+			end.setDate(end.getDate() + 1);
+			filter.dateUploaded.$lt = end;
+		}
 	}
 
 	function pageUrl(pageNum) {
 		const params = new URLSearchParams(req.query);
 
-		selectedDiningHalls.forEach(hall => {
+		selectedDiningHalls.forEach((hall) => {
 			params.append("diningHall", hall);
 		});
 
-		selectedMealTime.forEach(time => {
+		selectedMealTime.forEach((time) => {
 			params.append("mealTime", time);
 		});
 
@@ -208,40 +207,42 @@ app.get("/staff", async (req, res) => {
 	let totalReviews = await db.collection(REVIEWS).countDocuments(filter);
 	let totalPages = Math.ceil(totalReviews / perPage);
 
-	const reviews = await db.collection(REVIEWS)
+	const reviews = await db
+		.collection(REVIEWS)
 		.find(filter)
-		.sort({reviewID: -1})
-		.sort({dateUploaded: -1})
+		.sort({ reviewID: -1 })
+		.sort({ dateUploaded: -1 })
 		.skip((page - 1) * perPage)
-  		.limit(perPage)
+		.limit(perPage)
 		.toArray();
-
 
 	return res.render("staff-dashboard.ejs", {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
 		reviews,
 		page,
-  		totalPages,
+		totalPages,
 		pageUrl,
 		selectedDiningHalls,
 		selectedMealTime,
 		startDate,
-		endDate
+		endDate,
 	});
 });
 
 app.get("/staff/review-detail/:reviewID", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
 
-	var existingStaff = await db.collection(STAFF).findOne({ email: req.session.email });
-	if(!existingStaff){
+	var existingStaff = await db
+		.collection(STAFF)
+		.findOne({ email: req.session.email });
+	if (!existingStaff) {
 		return res.redirect("/home");
 	}
 
 	const reviewID = parseInt(req.params.reviewID);
 
-	const review = await db.collection(REVIEWS).findOne({reviewID: reviewID});
+	const review = await db.collection(REVIEWS).findOne({ reviewID: reviewID });
 	if (!review) {
 		req.flash("error", "Review not found.");
 		return res.redirect("/staff");
@@ -251,9 +252,9 @@ app.get("/staff/review-detail/:reviewID", async (req, res) => {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
 		review,
-		reviewID
+		reviewID,
 	});
-})
+});
 
 // review submission form, check login functionality
 app.get("/review-form", (req, res) => {
@@ -271,11 +272,11 @@ app.get("/submit-review", async (req, res) => {
 	res.render("submit-review.ejs");
 });
 
-async function incrCounter(counters, key){
+async function incrCounter(counters, key) {
 	let result = await counters.findOneAndUpdate(
-		{collection: key},
-		{$inc: {counter: 1}},
-		{returnDocument: "after"}
+		{ collection: key },
+		{ $inc: { counter: 1 } },
+		{ returnDocument: "after" },
 	);
 
 	return result.counter;
@@ -291,7 +292,6 @@ app.post("/submit-review", async (req, res) => {
 		}
 
 		// Get form data
-<<<<<<< HEAD
 		const {
 			diningHall,
 			rating,
@@ -301,9 +301,6 @@ app.post("/submit-review", async (req, res) => {
 			display,
 			image,
 		} = req.body;
-=======
-		const { diningHall, mealTime, rating, reviewText, category, anonymous, display} = req.body;
->>>>>>> 1fe3a30cb5cc707758e50335392e9267c81c5058
 
 		// Validation
 		const errors = [];
@@ -311,15 +308,10 @@ app.post("/submit-review", async (req, res) => {
 		if (!mealTime) errors.push("Please select your meal time");
 		if (!rating) errors.push("Please select a rating");
 		if (!reviewText) errors.push("Please enter a review");
-<<<<<<< HEAD
 		if (reviewText.length < 5)
-			errors.push("Review must be at least 10 characters");
+			errors.push("Review must be at least 5 characters");
 		if (reviewText.length > 500)
 			errors.push("Review must not exceed 500 characters");
-=======
-		if (reviewText.length < 5) errors.push("Review must be at least 5 characters");
-		if (reviewText.length > 500) errors.push("Review must not exceed 500 characters");
->>>>>>> eb57dc855de678ea7b041f13306b4b2b6aaf2a6c
 		if (!category) errors.push("Please select a category");
 
 		// If validation fails, show errors
@@ -334,11 +326,8 @@ app.post("/submit-review", async (req, res) => {
 
 		// Connect to database and insert review
 		const db = await Connection.open(mongoUri, DB);
-<<<<<<< HEAD
-=======
 		const counters = db.collection(COUNTERS);
 		let reviewID = await incrCounter(counters, "reviews");
->>>>>>> eb57dc855de678ea7b041f13306b4b2b6aaf2a6c
 
 		const newReview = {
 			reviewID,
@@ -356,19 +345,10 @@ app.post("/submit-review", async (req, res) => {
 		// Insert into database
 		await db.collection(REVIEWS).insertOne(newReview);
 
-<<<<<<< HEAD
-		console.log(`Review inserted with ID: ${result.insertedId}`);
-		req.flash(
-			"info",
-			"Thank you! Your review has been submitted successfully!",
-		);
-=======
 		req.flash("info", "Thank you! Your review has been submitted successfully!");
-		
+		console.log(`Review inserted with ID: ${newReview.reviewID}`);
 		return res.redirect("/submit-review");
->>>>>>> eb57dc855de678ea7b041f13306b4b2b6aaf2a6c
 
-		return res.redirect("/submit-review");
 	} catch (error) {
 		console.error("Error submitting review:", error);
 		req.flash("error", `Form submission error: ${error}`);
@@ -385,7 +365,9 @@ app.post("/signup", async (req, res) => {
 		const email = req.body.email;
 		const password = req.body.password;
 		const db = await Connection.open(mongoUri, DB);
-		var existingStudent = await db.collection(STUDENTS).findOne({ email: email });
+		var existingStudent = await db
+			.collection(STUDENTS)
+			.findOne({ email: email });
 		var existingStaff = await db.collection(STAFF).findOne({ email: email });
 		if (existingStudent) {
 			req.flash(
@@ -405,7 +387,7 @@ app.post("/signup", async (req, res) => {
 		await db.collection(STUDENTS).insertOne({
 			email: email,
 			password: hash,
-			revieweCount: 0,
+			reviewCount: 0,
 		});
 
 		console.log("successfully joined", email, password, hash);
