@@ -43,3 +43,15 @@ Future improvements may include:
 - Staff Login
 	- email: tower.staff@wellesley.edu
 	- password: test1234
+
+- What you can do for the alpha version:
+    - View the most recent 6 reviews on the homepage (they are all permitted to be displayed by the students)
+    - Log in from the top right button with the sample account (both students and staff)
+    - Sign up from the top right button with the sample account (only students)
+    - Click the buttons in the navigation header, and you will be redirected to different pages
+    - Click the “Provide Your Feedback Today” button, and you will be either redirected to the login page or the feedback page
+    - Enter your feedback in the form
+        - Text, options, and file upload
+    - View the staff dashboard from the staff account
+    - View the details of each review
+    - Search and filter the reviews

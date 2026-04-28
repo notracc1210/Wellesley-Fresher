@@ -29,7 +29,6 @@ app.use(bodyParser.json());
 
 app.use(cs304.logRequestData); // tell the user about any request data
 
-app.use(serveStatic("public"));
 app.set("view engine", "ejs");
 
 app.use(
@@ -64,7 +63,7 @@ const ROUNDS = 10;
 // main page
 app.get("/home", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
-	display_reviews = await db
+	const display_reviews = await db
 		.collection(REVIEWS)
 		.find(
 			{ canDisplay: true },
@@ -108,8 +107,15 @@ app.post("/login", async (req, res) => {
 		var existingUser = await db.collection(STUDENTS).findOne({ email: email });
 		var existingStaff = await db.collection(STAFF).findOne({ email: email });
 		if(existingStaff){
+			const match = await bcrypt.compare(password, existingStaff.password);
+			if (!match) {
+				console.log("Username or password incorrect - try again.");
+				req.flash("error", "Username or password incorrect - try again.");
+				return res.redirect("/login");
+			}
 			req.session.email = email;
 			req.session.logged_in = true;
+			console.log("match", match);
 			return res.redirect("/staff");
 		}
 		if (!existingUser) {
@@ -122,7 +128,7 @@ app.post("/login", async (req, res) => {
 		if (!match) {
 			console.log("Username or password incorrect - try again.");
 			req.flash("error", "Username or password incorrect - try again.");
-			return res.redirect("/");
+			return res.redirect("/login");
 		}
 		req.flash("info", "successfully logged in as " + email);
 		req.session.email = email;
@@ -188,27 +194,12 @@ app.get("/staff", async (req, res) => {
 	function pageUrl(pageNum) {
 		const params = new URLSearchParams(req.query);
 
-		selectedDiningHalls.forEach(hall => {
-			params.append("diningHall", hall);
-		});
-
-		selectedMealTime.forEach(time => {
-			params.append("mealTime", time);
-		});
-
-		if (startDate) params.set("startDate", startDate);
-		if (endDate) params.set("endDate", endDate);
-		if (search) params.set("search", search);
-
 		params.set("page", pageNum);
 		return "/staff?" + params.toString();
 	}
 
 	let page = parseInt(req.query.page) || 1;
 	const perPage = 5;
-
-	let totalReviews = await db.collection(REVIEWS).countDocuments(filter);
-	let totalPages = Math.ceil(totalReviews / perPage);
 
 	const search = req.query.search ? req.query.search.trim() : "";
 
@@ -225,6 +216,9 @@ app.get("/staff", async (req, res) => {
 
 		filter.$or = searchConditions;
 	}
+
+	let totalReviews = await db.collection(REVIEWS).countDocuments(filter);
+	let totalPages = Math.ceil(totalReviews / perPage);
 
 	const reviews = await db.collection(REVIEWS)
 		.find(filter)
@@ -417,7 +411,7 @@ app.post("/signup", async (req, res) => {
 		if (existingStaff) {
 			req.flash(
 				"error",
-				'If you are Wellesley Fresh staff, please <a href="/login">log in</a> directly.',
+				'If you are Wellesley Fresh staff, please login directly.',
 			);
 			return res.redirect("/signup");
 		}
@@ -428,7 +422,6 @@ app.post("/signup", async (req, res) => {
 			revieweCount: 0,
 		});
 
-		console.log("successfully joined", email, password, hash);
 		req.flash("info", "successfully joined and logged in as " + email);
 		req.session.email = email;
 		req.session.logged_in = true;

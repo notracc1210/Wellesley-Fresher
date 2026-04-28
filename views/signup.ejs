@@ -109,7 +109,11 @@
                     <% if (messages.error) { %>
                         <ul>
                         <% messages.error.forEach( msg => {%>
-                            <li><%- msg %></li>
+                            <% if (msg.includes("If you are Wellesley Fresh staff, please login directly.")) { %>
+                              <li>If you are Wellesley Fresh staff, please <a href="/login">log in</a> directly.</li>
+                          <% } else { %>
+                              <li><%= msg %></li>
+                          <% } %>
                         <% }) %>
                         </ul>
                     <% } %>
