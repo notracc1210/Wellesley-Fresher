@@ -55,7 +55,6 @@ const DB = "fresher";
 const STUDENTS = "students";
 const REVIEWS = "reviews";
 const STAFF = "staff";
-const IMAGES = "images";
 const COUNTERS = "counters";
 
 const ROUNDS = 10;
@@ -77,7 +76,7 @@ app.get("/home", async (req, res) => {
 	while (display_reviews.length < 6) {
 		display_reviews.push({
 			reviewText: "No reviews yet",
-			diningHallName: "Coming soon",
+			diningHall: "Coming soon",
 			dateUploaded: new Date(),
 		});
 	}
@@ -103,10 +102,9 @@ app.post("/login", async (req, res) => {
 	try {
 		const email = req.body.email;
 		const password = req.body.password;
-		console.log("Hello: " + req.body);
 		const db = await Connection.open(mongoUri, DB);
-		var existingUser = await db.collection(STUDENTS).findOne({ email: email });
-		var existingStaff = await db.collection(STAFF).findOne({ email: email });
+		let existingUser = await db.collection(STUDENTS).findOne({ email: email });
+		let existingStaff = await db.collection(STAFF).findOne({ email: email });
 		if(existingStaff){
 			const match = await bcrypt.compare(password, existingStaff.password);
 			if (!match) {
@@ -148,7 +146,7 @@ app.post("/login", async (req, res) => {
 app.get("/staff", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
 	const email = req.session.email;
-	var existingStaff = await db.collection(STAFF).findOne({ email: email });
+	let existingStaff = await db.collection(STAFF).findOne({ email: email });
 	if(!existingStaff){
 		return res.redirect("/login");
 	}
@@ -192,6 +190,8 @@ app.get("/staff", async (req, res) => {
 	}
 	}
 
+	// Builds a staff dashboard URL for the given page number,
+	// preserving all active query filters (dining hall, meal time, date range, search).
 	function pageUrl(pageNum) {
 		const params = new URLSearchParams(req.query);
 
@@ -223,7 +223,6 @@ app.get("/staff", async (req, res) => {
 
 	const reviews = await db.collection(REVIEWS)
 		.find(filter)
-		.sort({reviewID: -1})
 		.sort({dateUploaded: -1})
 		.skip((page - 1) * perPage)
   		.limit(perPage)
@@ -248,7 +247,7 @@ app.get("/staff", async (req, res) => {
 app.get("/staff/review-detail/:reviewID", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
 
-	var existingStaff = await db.collection(STAFF).findOne({ email: req.session.email });
+	let existingStaff = await db.collection(STAFF).findOne({ email: req.session.email });
 	if(!existingStaff){
 		return res.redirect("/login");
 	}
@@ -311,6 +310,8 @@ app.get("/submit-review", async (req,res) => {
 	res.render("submit-review.ejs");
 })
 
+// Increments the counter for the given collection key and returns the new value.
+// Used to generate unique sequential IDs for new reviews.
 async function incrCounter(counters, key){
 	let result = await counters.findOneAndUpdate(
 		{collection: key},
@@ -331,7 +332,7 @@ app.post("/submit-review", upload.single("reviewImage"), async (req, res) => {
 		}
 
 		// Get form data
-		const { diningHall, mealTime, rating, reviewText, category, anonymous, display} = req.body;
+		const { diningHall, mealTime, rating, reviewText, category, display} = req.body;
 
 		let imagePath = null;
 
@@ -400,8 +401,8 @@ app.post("/signup", async (req, res) => {
 		const email = req.body.email;
 		const password = req.body.password;
 		const db = await Connection.open(mongoUri, DB);
-		var existingStudent = await db.collection(STUDENTS).findOne({ email: email });
-		var existingStaff = await db.collection(STAFF).findOne({ email: email });
+		let existingStudent = await db.collection(STUDENTS).findOne({ email: email });
+		let existingStaff = await db.collection(STAFF).findOne({ email: email });
 		if (existingStudent) {
 			req.flash(
 				"error",

@@ -12,7 +12,7 @@
               width="40"
               height="32"
               role="img"
-              aria-label="Bootstrap"
+              aria-label="Wellesley Fresher Home"
             >
               <use xlink:href="#bootstrap"></use>
             </svg>
@@ -28,10 +28,8 @@
 
           <% if(!logged_in){ %>
             <div class="text-end">
-              <button type="button" class="btn btn-outline-light me-2" onclick="window.location.href='/login'">
-                Login
-              </button>
-              <button type="button" class="btn btn-warning" onclick="window.location.href='/signup'">Sign-up</button>
+              <a href="/login" class="btn btn-outline-light me-2">Login</a>
+              <a href="/signup" class="btn btn-warning">Sign-up</a>
             </div>
           <% } else{ %>
             <div class="d-flex gap-2">
