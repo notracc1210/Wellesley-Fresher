@@ -70,10 +70,11 @@ app.get("/home", async (req, res) => {
 			{ projection: { reviewText: 1, diningHall: 1, dateUploaded: 1 } },
 		)
 		.sort({dateUploaded: -1})
+		.limit(6)
 		.toArray();
 
 	// if not enough reviews, add placeholders
-	while (display_reviews.length < 3) {
+	while (display_reviews.length < 6) {
 		display_reviews.push({
 			reviewText: "No reviews yet",
 			diningHallName: "Coming soon",

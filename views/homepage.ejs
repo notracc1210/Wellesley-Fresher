@@ -14,56 +14,8 @@
   </head>
 
   <body>
-    <header class="p-3 text-bg-dark">
-      <div class="container">
-        <div
-          class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
-        >
-          <a
-            href="/"
-            class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
-          >
-            <svg
-              class="bi me-2"
-              width="40"
-              height="32"
-              role="img"
-              aria-label="Bootstrap"
-            >
-              <use xlink:href="#bootstrap"></use>
-            </svg>
-          </a>
-          <ul
-            class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
-          >
-            <li><a href="/home" class="nav-link px-2 text-secondary">Home</a></li>
-            <li><a href="/review-form" class="nav-link px-2 text-white">Feedback</a></li>
-            <li><a href="https://dish.avifoodsystems.com/wellesley" class="nav-link px-2 text-white">Meals</a></li>
-          </ul>
-          
-
-          <% if(!logged_in){ %>
-            <div class="text-end">
-              <button type="button" class="btn btn-outline-light me-2" onclick="window.location.href='/login'">
-                Login
-              </button>
-              <button type="button" class="btn btn-warning" onclick="window.location.href='/signup'">Sign-up</button>
-            </div>
-          <% } else{ %>
-            <div class="d-flex gap-2">
-              <p class="pt-3"><%= email %></p>
-              <form action="/logout" method="POST">
-                <button type="submit" class="btn btn-outline-light mt-2">
-                  Logout
-                </button>
-              </form>
-					</div>
-          <% } %>
-          
-
-        </div>
-      </div>
-    </header>
+    
+    <%- include('partials/navbar-student') %>
 
     <div class="px-4 pt-5 my-5 text-center border-bottom">
       <h1 class="display-4 fw-bold text-body-emphasis">Wellesley Fresher</h1>
@@ -85,150 +37,28 @@
     <div class="container px-4 py-5" id="custom-cards">
       <h2 class="pb-2 border-bottom">Recent Reviews</h2>
       <div class="row row-cols-2 row-cols-lg-3 align-items-stretch g-4 py-5">
-        <div class="col">
-          <div
-            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
-          >
-            <div
-              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
-            >
-              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                <%= display_reviews[0].reviewText %>
-              </h3>
-              <ul class="d-flex list-unstyled mt-auto">
-                <li class="d-flex align-items-center me-3">
-                  <small><%= display_reviews[0].diningHall %></small>
-                </li>
-                <li class="d-flex align-items-center">
-                  <small>
-                    <%= new Date(display_reviews[0].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
-                  </small>
-                </li>
-              </ul>
+        
+        <% display_reviews.forEach(review => { %>
+          <div class="col">
+            <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
+                style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)">
+              <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                  <%= review.reviewText %>
+                </h3>
+                <ul class="d-flex list-unstyled mt-auto">
+                  <li class="d-flex align-items-center me-3">
+                    <small><%= review.diningHall %></small>
+                  </li>
+                  <li class="d-flex align-items-center">
+                    <small><%= new Date(review.dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %></small>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col">
-          <div
-            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
-          >
-            <div
-              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
-            >
-              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                <%= display_reviews[1].reviewText %>
-              </h3>
-              <ul class="d-flex list-unstyled mt-auto">
-                <li class="d-flex align-items-center me-3">
-                  <small><%= display_reviews[1].diningHall %></small>
-                </li>
-                <li class="d-flex align-items-center">
-                  <small>
-                    <%= new Date(display_reviews[1].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
-                  </small>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div
-            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
-          >
-            <div
-              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
-            >
-              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                <%= display_reviews[2].reviewText %>
-              </h3>
-              <ul class="d-flex list-unstyled mt-auto">
-                <li class="d-flex align-items-center me-3">
-                  <small><%= display_reviews[2].diningHall %></small>
-                </li>
-                <li class="d-flex align-items-center">
-                  <small>
-                    <%= new Date(display_reviews[2].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
-                  </small>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>   
-        <div class="col">
-          <div
-            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
-          >
-            <div
-              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
-            >
-              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                <%= display_reviews[3].reviewText %>
-              </h3>
-              <ul class="d-flex list-unstyled mt-auto">
-                <li class="d-flex align-items-center me-3">
-                  <small><%= display_reviews[3].diningHall %></small>
-                </li>
-                <li class="d-flex align-items-center">
-                  <small>
-                    <%= new Date(display_reviews[3].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
-                  </small>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div
-            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
-          >
-            <div
-              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
-            >
-              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                <%= display_reviews[4].reviewText %>
-              </h3>
-              <ul class="d-flex list-unstyled mt-auto">
-                <li class="d-flex align-items-center me-3">
-                  <small><%= display_reviews[4].diningHall %></small>
-                </li>
-                <li class="d-flex align-items-center">
-                  <small>
-                    <%= new Date(display_reviews[4].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
-                  </small>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div
-            class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-            style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)"
-          >
-            <div
-              class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1"
-            >
-              <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                <%= display_reviews[5].reviewText %>
-              </h3>
-              <ul class="d-flex list-unstyled mt-auto">
-                <li class="d-flex align-items-center me-3">
-                  <small><%= display_reviews[5].diningHall %></small>
-                </li>
-                <li class="d-flex align-items-center">
-                  <small>
-                    <%= new Date(display_reviews[5].dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %>
-                  </small>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>         
+        <% }) %>  
+              
     </div>
   </body>
 </html>
