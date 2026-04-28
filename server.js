@@ -143,7 +143,7 @@ app.get("/staff", async (req, res) => {
 	const email = req.session.email;
 	var existingStaff = await db.collection(STAFF).findOne({ email: email });
 	if(!existingStaff){
-		return res.redirect("/home");
+		return res.redirect("/login");
 	}
 
 	const selectedDiningHalls = req.query.diningHall
@@ -198,6 +198,7 @@ app.get("/staff", async (req, res) => {
 
 		if (startDate) params.set("startDate", startDate);
 		if (endDate) params.set("endDate", endDate);
+		if (search) params.set("search", search);
 
 		params.set("page", pageNum);
 		return "/staff?" + params.toString();
@@ -208,6 +209,22 @@ app.get("/staff", async (req, res) => {
 
 	let totalReviews = await db.collection(REVIEWS).countDocuments(filter);
 	let totalPages = Math.ceil(totalReviews / perPage);
+
+	const search = req.query.search ? req.query.search.trim() : "";
+
+	if (search) {
+		const searchConditions = [
+			{ reviewText: { $regex: search, $options: "i" } },
+		];
+
+		const searchAsNumber = parseInt(search);
+
+		if (!isNaN(searchAsNumber)) {
+			searchConditions.push({ reviewID: searchAsNumber });
+		}
+
+		filter.$or = searchConditions;
+	}
 
 	const reviews = await db.collection(REVIEWS)
 		.find(filter)
@@ -228,7 +245,8 @@ app.get("/staff", async (req, res) => {
 		selectedDiningHalls,
 		selectedMealTime,
 		startDate,
-		endDate
+		endDate,
+		search
 	});
 });
 
@@ -237,7 +255,7 @@ app.get("/staff/review-detail/:reviewID", async (req, res) => {
 
 	var existingStaff = await db.collection(STAFF).findOne({ email: req.session.email });
 	if(!existingStaff){
-		return res.redirect("/home");
+		return res.redirect("/login");
 	}
 
 	const reviewID = parseInt(req.params.reviewID);
@@ -424,8 +442,8 @@ app.post("/signup", async (req, res) => {
 
 app.post("/logout", (req, res) => {
 	if (req.session.email) {
-		req.session.username = null;
 		req.session.logged_in = false;
+		req.session.email = null;
 		req.flash("info", "You are logged out");
 		return res.redirect("/");
 	} else {

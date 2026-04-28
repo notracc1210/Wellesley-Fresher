@@ -66,15 +66,17 @@
 
 		<div class="container px-4 py-5" id="custom-cards">
 			<h2 class="pb-2 border-bottom">Reviews</h2>
-			<form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-						<input
+
+			<form method="GET" action="/staff" class="d-flex flex-wrap gap-3 align-items-center">
+				<div class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
+					<input
 							type="search"
 							class="form-control form-control-light text-bg-light mt-3 mb-3"
 							placeholder="Search for reviews"
 							aria-label="Search"
+							name="search"
 						/>
-			</form>
-			<form method="GET" action="/staff" class="d-flex flex-wrap gap-3 align-items-center">
+				</div>
 				<input type="hidden" name="page" value="1">
 				<div class="dropdown-DiningHall">
 					<button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">Dining Hall</button>
