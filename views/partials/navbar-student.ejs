@@ -1,48 +1,48 @@
 <header class="p-3 text-bg-dark">
-      <div class="container">
-        <div
-          class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
+    <div class="container">
+    <div
+        class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
+    >
+        <a
+        href="/"
+        class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
         >
-          <a
-            href="/"
-            class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
-          >
-            <svg
-              class="bi me-2"
-              width="40"
-              height="32"
-              role="img"
-              aria-label="Wellesley Fresher Home"
-            >
-              <use xlink:href="#bootstrap"></use>
-            </svg>
-          </a>
-          <ul
-            class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
-          >
-            <li><a href="/home" class="nav-link px-2 text-secondary">Home</a></li>
-            <li><a href="/review-form" class="nav-link px-2 text-white">Feedback</a></li>
-            <li><a href="https://dish.avifoodsystems.com/wellesley" class="nav-link px-2 text-white">Meals</a></li>
-          </ul>
-          
+        <svg
+            class="bi me-2"
+            width="40"
+            height="32"
+            role="img"
+            aria-label="Wellesley Fresher Home"
+        >
+            <use xlink:href="#bootstrap"></use>
+        </svg>
+        </a>
+        <ul
+        class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
+        >
+        <li><a href="/home" class="nav-link px-2 text-secondary">Home</a></li>
+        <li><a href="/review-form" class="nav-link px-2 text-white">Feedback</a></li>
+        <li><a href="https://dish.avifoodsystems.com/wellesley" class="nav-link px-2 text-white">Meals</a></li>
+        </ul>
+        
 
-          <% if(!logged_in){ %>
-            <div class="text-end">
-              <a href="/login" class="btn btn-outline-light me-2">Login</a>
-              <a href="/signup" class="btn btn-warning">Sign-up</a>
-            </div>
-          <% } else{ %>
-            <div class="d-flex gap-2">
-              <p class="pt-3"><%= email %></p>
-              <form action="/logout" method="POST">
-                <button type="submit" class="btn btn-outline-light mt-2">
-                  Logout
-                </button>
-              </form>
-					</div>
-          <% } %>
-          
-
+        <% if(!logged_in){ %>
+        <div class="text-end">
+            <a href="/login" class="btn btn-outline-light me-2">Login</a>
+            <a href="/signup" class="btn btn-warning">Sign-up</a>
         </div>
-      </div>
-    </header>
+        <% } else{ %>
+        <div class="d-flex gap-2">
+            <p class="pt-3"><%= email %></p>
+            <form action="/logout" method="POST">
+            <button type="submit" class="btn btn-outline-light mt-2">
+                Logout
+            </button>
+            </form>
+                </div>
+        <% } %>
+        
+
+    </div>
+    </div>
+</header>
