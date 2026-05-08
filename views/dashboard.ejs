@@ -18,13 +18,15 @@
 		<%- include('partials/navbar-staff') %>
 
 		<div class="px-4 pt-5 my-5 text-center border-bottom">
-			<h1 class="display-4 fw-bold text-body-emphasis mb-5">Staff Dashboard</h1>
+			<h1 class="display-4 fw-bold text-body-emphasis mb-5">
+				<%= isAdmin ? "Admin Dashboard" : "Staff Dashboard" %>
+			</h1>
 		</div>
 
 		<div class="container px-4 py-5" id="custom-cards">
 			<h2 class="pb-2 border-bottom">Reviews</h2>
 
-			<form method="GET" action="/staff" class="d-flex flex-wrap gap-3 align-items-center">
+			<form method="GET" action="<%= isAdmin ? '/admin' : '/staff' %>" class="d-flex flex-wrap gap-3 align-items-center">
 				<div class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
 					<input
 							type="search"
@@ -159,7 +161,10 @@
 								<p style="font-size: 22px;"><%= review.reviewText %></p>
 								<ul class="d-flex list-unstyled mt-auto">
 									<li class="d-flex align-items-center me-3">
-										<small><a href="/staff/review-detail/<%= review.reviewID %>">View details</a></small>
+										<small><a href="<%= isAdmin ? '/admin' : '/staff' %>/review-detail/<%= review.reviewID %>">
+												View Detail
+											</a>
+										</small>
 									</li>
 									<li class="me-auto">
 									</li>
@@ -179,13 +184,14 @@
 				<% }) %>
 				
 				<nav class="d-flex justify-content-center align-items-center gap-2 mt-4">
+					<% const dashboardPath = isAdmin ? "/admin" : "/staff"; %>
 					<% if (page > 1) { %>
 						<a class="btn btn-outline-dark" href="<%= pageUrl(page - 1) %>">←</a>
 					<% } else { %>
 						<button class="btn btn-outline-secondary" disabled>←</button>
 					<% } %>
 
-					<form method="GET" action="/staff" class="d-flex align-items-center gap-2">
+					<form method="GET" action="<%= dashboardPath %>" class="d-flex align-items-center gap-2">
 						<% selectedDiningHalls.forEach(hall => { %>
 							<input type="hidden" name="diningHall" value="<%= hall %>">
 						<% }) %>

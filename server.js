@@ -56,8 +56,36 @@ const STUDENTS = "students";
 const REVIEWS = "reviews";
 const STAFF = "staff";
 const COUNTERS = "counters";
+const ADMIN = "admin";
 
 const ROUNDS = 10;
+
+const storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, "public/images");
+	},
+	filename: function (req, file, cb) {
+		const uniqueName = Date.now() + "-" + file.originalname;
+		cb(null, uniqueName);
+	}
+});
+
+const fileFilter = function (req, file, cb) {
+	if (file.mimetype.startsWith("image/")) {
+		cb(null, true);
+	} else {
+		cb(new Error("Only image files are allowed."), false);
+	}
+};
+
+const upload = multer({
+	storage: storage,
+	fileFilter: fileFilter,
+	limits: {
+		fileSize: 20 * 1024 * 1024
+	}
+});
+
 
 // main page
 app.get("/home", async (req, res) => {
@@ -108,6 +136,19 @@ app.post("/login", async (req, res) => {
 		const db = await Connection.open(mongoUri, DB);
 		let existingUser = await db.collection(STUDENTS).findOne({ email: email });
 		let existingStaff = await db.collection(STAFF).findOne({ email: email });
+		let existingAdmin = await db.collection(ADMIN).findOne({ email: email });
+		if(existingAdmin){
+			const match = await bcrypt.compare(password, existingAdmin.password);
+			if (!match) {
+				console.log("Username or password incorrect - try again.");
+				req.flash("error", "Username or password incorrect - try again.");
+				return res.redirect("/login");
+			}
+			req.session.email = email;
+			req.session.logged_in = true;
+			console.log("match", match);
+			return res.redirect("/admin");
+		}
 		if(existingStaff){
 			const match = await bcrypt.compare(password, existingStaff.password);
 			if (!match) {
@@ -144,36 +185,49 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-
-// staff page/dashboard
-app.get("/staff", async (req, res) => {
+async function requireUserInCollection(req, res, collectionName) {
 	const db = await Connection.open(mongoUri, DB);
-	const email = req.session.email;
-	let existingStaff = await db.collection(STAFF).findOne({ email: email });
-	if(!existingStaff){
-		return res.redirect("/login");
+
+	if (!req.session.logged_in || !req.session.email) {
+		req.flash("error", "You must be logged in.");
+		res.redirect("/login");
+		return null;
 	}
 
+	const user = await db.collection(collectionName).findOne({
+		email: req.session.email
+	});
+
+	if (!user) {
+		req.flash("error", "You are not authorized to access this page.");
+		res.redirect("/login");
+		return null;
+	}
+
+	return db;
+}
+
+async function getReviewDashboardData(req, db, baseUrl) {
 	const selectedDiningHalls = req.query.diningHall
 		? Array.isArray(req.query.diningHall)
-		? req.query.diningHall
-		: [req.query.diningHall]
+			? req.query.diningHall
+			: [req.query.diningHall]
 		: [];
 
 	const selectedMealTime = req.query.mealTime
 		? Array.isArray(req.query.mealTime)
-		? req.query.mealTime
-		: [req.query.mealTime]
+			? req.query.mealTime
+			: [req.query.mealTime]
 		: [];
 
 	const filter = {};
 
-	if(req.query.diningHall){
-		filter.diningHall = {$in: selectedDiningHalls};
+	if (selectedDiningHalls.length > 0) {
+		filter.diningHall = { $in: selectedDiningHalls };
 	}
 
-	if(req.query.mealTime){
-		filter.mealTime = {$in: selectedMealTime};
+	if (selectedMealTime.length > 0) {
+		filter.mealTime = { $in: selectedMealTime };
 	}
 
 	const startDate = req.query.startDate || "";
@@ -182,28 +236,16 @@ app.get("/staff", async (req, res) => {
 	if (startDate || endDate) {
 		filter.dateUploaded = {};
 
-	if (startDate) {
-		filter.dateUploaded.$gte = new Date(startDate);
-	}
+		if (startDate) {
+			filter.dateUploaded.$gte = new Date(startDate);
+		}
 
-	if (endDate) {
-		const end = new Date(endDate);
-		end.setDate(end.getDate() + 1);
-		filter.dateUploaded.$lt = end;
+		if (endDate) {
+			const end = new Date(endDate);
+			end.setDate(end.getDate() + 1);
+			filter.dateUploaded.$lt = end;
+		}
 	}
-	}
-
-	// Builds a staff dashboard URL for the given page number,
-	// preserving all active query filters (dining hall, meal time, date range, search).
-	function pageUrl(pageNum) {
-		const params = new URLSearchParams(req.query);
-
-		params.set("page", pageNum);
-		return "/staff?" + params.toString();
-	}
-
-	let page = parseInt(req.query.page) || 1;
-	const perPage = 5;
 
 	const search = req.query.search ? req.query.search.trim() : "";
 
@@ -221,81 +263,320 @@ app.get("/staff", async (req, res) => {
 		filter.$or = searchConditions;
 	}
 
-	let totalReviews = await db.collection(REVIEWS).countDocuments(filter);
-	let totalPages = Math.ceil(totalReviews / perPage);
+	let page = parseInt(req.query.page) || 1;
+	const perPage = 5;
+
+	const totalReviews = await db.collection(REVIEWS).countDocuments(filter);
+	const totalPages = Math.ceil(totalReviews / perPage);
 
 	const reviews = await db.collection(REVIEWS)
 		.find(filter)
-		.sort({dateUploaded: -1})
+		.sort({ dateUploaded: -1 })
 		.skip((page - 1) * perPage)
-  		.limit(perPage)
+		.limit(perPage)
 		.toArray();
 
+	function pageUrl(pageNum) {
+		const params = new URLSearchParams(req.query);
+		params.set("page", pageNum);
+		return baseUrl + "?" + params.toString();
+	}
 
-	return res.render("staff-dashboard.ejs", {
+	return {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
 		reviews,
 		page,
-  		totalPages,
+		totalPages,
 		pageUrl,
 		selectedDiningHalls,
 		selectedMealTime,
 		startDate,
 		endDate,
 		search
+	};
+}
+
+// staff page/dashboard
+app.get("/staff", async (req, res) => {
+	const db = await requireUserInCollection(req, res, STAFF);
+	if (!db) return;
+
+	const data = await getReviewDashboardData(req, db, "/staff");
+
+	return res.render("dashboard.ejs", {
+		...data,
+		isAdmin: false,
+		dashboardPath: "/staff",
+		analyticsPath: "/staff/analytics"
 	});
 });
 
-app.get("/staff/review-detail/:reviewID", async (req, res) => {
-	const db = await Connection.open(mongoUri, DB);
+app.get("/admin", async (req, res) => {
+	const db = await requireUserInCollection(req, res, ADMIN);
+	if (!db) return;
 
-	let existingStaff = await db.collection(STAFF).findOne({ email: req.session.email });
-	if(!existingStaff){
-		return res.redirect("/login");
-	}
+	const data = await getReviewDashboardData(req, db, "/admin");
+
+	return res.render("dashboard.ejs", {
+		...data,
+		isAdmin: true,
+		dashboardPath: "/admin",
+		analyticsPath: "/admin/analytics"
+	});
+});
+
+async function renderReviewDetail(req, res, collectionName, backUrl, isAdmin) {
+	const db = await requireUserInCollection(req, res, collectionName);
+	if (!db) return;
 
 	const reviewID = parseInt(req.params.reviewID);
 
-	const review = await db.collection(REVIEWS).findOne({reviewID: reviewID});
+	if (isNaN(reviewID)) {
+		req.flash("error", "Invalid review ID.");
+		return res.redirect(backUrl);
+	}
+
+	const review = await db.collection(REVIEWS).findOne({
+		reviewID: reviewID
+	});
+
 	if (!review) {
 		req.flash("error", "Review not found.");
-		return res.redirect("/staff");
+		return res.redirect(backUrl);
 	}
 
 	return res.render("review-detail.ejs", {
 		logged_in: req.session.logged_in,
 		email: req.session.email,
 		review,
-		reviewID
+		reviewID,
+		isAdmin,
+		backUrl
 	});
-})
+}
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "public/images");
-    },
-    filename: function (req, file, cb) {
-        const uniqueName = Date.now() + "-" + file.originalname;
-        cb(null, uniqueName);
-    }
+app.get("/staff/review-detail/:reviewID", async (req, res) => {
+	return renderReviewDetail(req, res, STAFF, "/staff", false);
 });
 
-const fileFilter = function (req, file, cb) {
-    if (file.mimetype.startsWith("image/")) {
-        cb(null, true);
-    } else {
-        cb(new Error("Only image files are allowed."), false);
-    }
-};
-
-const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: {
-        fileSize: 20 * 1024 * 1024
-    }
+app.get("/admin/review-detail/:reviewID", async (req, res) => {
+	return renderReviewDetail(req, res, ADMIN, "/admin", true);
 });
+
+app.post("/admin/review/:reviewID/delete", async (req, res) => {
+	const db = await requireUserInCollection(req, res, ADMIN);
+	if (!db) return;
+
+	const reviewID = parseInt(req.params.reviewID);
+
+	await db.collection(REVIEWS).deleteOne({
+		reviewID: reviewID
+	});
+
+	return res.redirect("/admin");
+});
+
+app.get("/admin/review/:reviewID/edit", async (req, res) => {
+	const db = await requireUserInCollection(req, res, ADMIN);
+	if (!db) return;
+
+	const reviewID = parseInt(req.params.reviewID);
+
+	if (isNaN(reviewID)) {
+		req.flash("error", "Invalid review ID.");
+		return res.redirect("/admin");
+	}
+
+	const review = await db.collection(REVIEWS).findOne({
+		reviewID: reviewID
+	});
+
+	if (!review) {
+		req.flash("error", "Review not found.");
+		return res.redirect("/admin");
+	}
+
+	return res.render("admin-edit-review.ejs", {
+		logged_in: req.session.logged_in,
+		email: req.session.email,
+		isAdmin:true,
+		review
+	});
+});
+
+app.post("/admin/review/:reviewID/edit", upload.single("reviewImage"), async (req, res) => {
+	const db = await requireUserInCollection(req, res, ADMIN);
+	if (!db) return;
+
+	const reviewID = parseInt(req.params.reviewID);
+
+	const {
+		diningHall,
+		mealTime,
+		rating,
+		reviewText,
+		category,
+		display,
+		removeImage
+	} = req.body;
+
+	const updateFields = {
+		diningHall: diningHall,
+		mealTime: mealTime,
+		rating: parseInt(rating),
+		reviewText: reviewText,
+		category: category,
+		canDisplay: display === "on",
+		lastEditedAt: new Date(),
+		lastEditedBy: req.session.email
+	};
+
+	// If admin uploads a new image, replace the old imagePath
+	if (req.file) {
+		updateFields.imagePath = "/images/" + req.file.filename;
+	}
+
+	// If admin checks "Remove current image" and did not upload a new one
+	if (removeImage === "on" && !req.file) {
+		updateFields.imagePath = null;
+	}
+
+	await db.collection(REVIEWS).updateOne(
+		{ reviewID: reviewID },
+		{ $set: updateFields }
+	);
+
+	req.flash("info", "Review updated successfully.");
+	return res.redirect("/admin");
+});
+
+async function getReviewAnalyticsData(req, db) {
+	const selectedDiningHalls = req.query.diningHall
+		? Array.isArray(req.query.diningHall)
+			? req.query.diningHall
+			: [req.query.diningHall]
+		: [];
+
+	const selectedMealTime = req.query.mealTime
+		? Array.isArray(req.query.mealTime)
+			? req.query.mealTime
+			: [req.query.mealTime]
+		: [];
+
+	const startDate = req.query.startDate || "";
+	const endDate = req.query.endDate || "";
+
+	const filter = {};
+
+	if (startDate || endDate) {
+		filter.dateUploaded = {};
+
+		if (startDate) {
+			filter.dateUploaded.$gte = new Date(startDate);
+		}
+
+		if (endDate) {
+			const end = new Date(endDate);
+			end.setDate(end.getDate() + 1);
+			filter.dateUploaded.$lt = end;
+		}
+	}
+
+	if (selectedDiningHalls.length > 0) {
+		filter.diningHall = { $in: selectedDiningHalls };
+	}
+
+	if (selectedMealTime.length > 0) {
+		filter.mealTime = { $in: selectedMealTime };
+	}
+
+	const result = await db.collection(REVIEWS).aggregate([
+		{ $match: filter },
+		{
+			$group: {
+				_id: null,
+				avgRating: { $avg: "$rating" },
+				reviewCount: { $sum: 1 }
+			}
+		}
+	]).toArray();
+
+	const analytics = result[0] || {
+		avgRating: 0,
+		reviewCount: 0
+	};
+
+	return {
+		startDate,
+		endDate,
+		selectedDiningHalls,
+		selectedMealTime,
+		avgRating: analytics.avgRating,
+		reviewCount: analytics.reviewCount
+	};
+}
+
+app.get("/staff/analytics", async (req, res) => {
+	const db = await requireUserInCollection(req, res, STAFF);
+	if (!db) return;
+
+	const data = await getReviewAnalyticsData(req, db);
+
+	return res.render("review-analytics.ejs", {
+		...data,
+		logged_in: req.session.logged_in,
+		email: req.session.email,
+		isAdmin: false,
+		dashboardPath: "/staff",
+		analyticsPath: "/staff/analytics"
+	});
+});
+
+app.get("/admin/analytics", async (req, res) => {
+	const db = await requireUserInCollection(req, res, ADMIN);
+	if (!db) return;
+
+	const data = await getReviewAnalyticsData(req, db);
+
+	return res.render("review-analytics.ejs", {
+		...data,
+		logged_in: req.session.logged_in,
+		email: req.session.email,
+		isAdmin: true,
+		dashboardPath: "/admin",
+		analyticsPath: "/admin/analytics"
+	});
+});
+
+
+// review submission form, check login functionality
+app.get("/review-form", (req, res) => {
+	if (!req.session.logged_in) {
+		req.flash("error", "You must be logged in to submit a review.");
+		return res.redirect("/login");
+	}
+	return res.render("review-form.ejs", {
+		logged_in: req.session.logged_in,
+		email: req.session.email,
+	});
+});
+
+app.get("/submit-review", async (req,res) => {
+	res.render("submit-review.ejs");
+});
+
+// Increments the counter for the given collection key and returns the new value.
+// Used to generate unique sequential IDs for new reviews.
+async function incrCounter(counters, key){
+	let result = await counters.findOneAndUpdate(
+		{collection: key},
+		{$inc: {counter: 1}},
+		{returnDocument: "after"}
+	);
+
+	return result.counter;
+}
 
 // review submission form, check login functionality
 app.get("/review-form", (req, res) => {
@@ -312,18 +593,6 @@ app.get("/review-form", (req, res) => {
 app.get("/submit-review", async (req,res) => {
 	res.render("submit-review.ejs");
 })
-
-// Increments the counter for the given collection key and returns the new value.
-// Used to generate unique sequential IDs for new reviews.
-async function incrCounter(counters, key){
-	let result = await counters.findOneAndUpdate(
-		{collection: key},
-		{$inc: {counter: 1}},
-		{returnDocument: "after"}
-	);
-
-	return result.counter;
-}
 
 // posting to database/submission route
 app.post("/submit-review", upload.single("reviewImage"), async (req, res) => {

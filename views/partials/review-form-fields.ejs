@@ -1,0 +1,214 @@
+<%
+  const r = typeof review !== "undefined" && review ? review : {};
+  const formAction = typeof action !== "undefined" ? action : "/submit-review";
+  const submitText = typeof submitLabel !== "undefined" ? submitLabel : "Submit Review";
+  const isEditMode = typeof isEdit !== "undefined" ? isEdit : false;
+%>
+
+<form method="POST" action="<%= formAction %>" enctype="multipart/form-data">
+  <!-- Dining Hall Selection -->
+  <div class="mb-4">
+    <label for="diningHall" class="form-label fw-bold">Dining Hall</label>
+    <select class="form-select form-select-lg" id="diningHall" name="diningHall" required>
+      <option value="">Select a dining hall...</option>
+
+      <option value="Bates Hall" <%= r.diningHall === "Bates Hall" ? "selected" : "" %>>
+        Bates Hall
+      </option>
+
+      <option value="Tower Court" <%= r.diningHall === "Tower Court" ? "selected" : "" %>>
+        Tower Court
+      </option>
+
+      <option value="Lulu Chow Wang Center" <%= r.diningHall === "Lulu Chow Wang Center" ? "selected" : "" %>>
+        Lulu Chow Wang Center
+      </option>
+
+      <option value="Stone Davis" <%= r.diningHall === "Stone Davis" ? "selected" : "" %>>
+        Stone Davis
+      </option>
+
+      <option value="Collins Cafe" <%= r.diningHall === "Collins Cafe" ? "selected" : "" %>>
+        Collins Cafe
+      </option>
+
+      <option value="Saxbys" <%= r.diningHall === "Saxbys" ? "selected" : "" %>>
+        Saxbys
+      </option>
+
+      <option value="Other" <%= r.diningHall === "Other" ? "selected" : "" %>>
+        Other
+      </option>
+    </select>
+  </div>
+
+  <!-- Meal Time Selection -->
+  <div class="mb-4">
+    <label for="mealTime" class="form-label fw-bold">Meal Time</label>
+    <select class="form-select form-select-lg" id="mealTime" name="mealTime" required>
+      <option value="">Select your meal time...</option>
+
+      <option value="Breakfast" <%= r.mealTime === "Breakfast" ? "selected" : "" %>>
+        Breakfast
+      </option>
+
+      <option value="Brunch" <%= r.mealTime === "Brunch" ? "selected" : "" %>>
+        Brunch (Weekend)
+      </option>
+
+      <option value="Lunch" <%= r.mealTime === "Lunch" ? "selected" : "" %>>
+        Lunch
+      </option>
+
+      <option value="Dinner" <%= r.mealTime === "Dinner" ? "selected" : "" %>>
+        Dinner
+      </option>
+    </select>
+  </div>
+
+  <!-- Rating -->
+  <div class="mb-4">
+    <label for="rating" class="form-label fw-bold">Overall Rating</label>
+    <select class="form-select form-select-lg" id="rating" name="rating" required>
+      <option value="">Select a rating...</option>
+
+      <option value="5" <%= r.rating === 5 ? "selected" : "" %>>
+        ⭐⭐⭐⭐⭐ Excellent
+      </option>
+
+      <option value="4" <%= r.rating === 4 ? "selected" : "" %>>
+        ⭐⭐⭐⭐ Good
+      </option>
+
+      <option value="3" <%= r.rating === 3 ? "selected" : "" %>>
+        ⭐⭐⭐ Average
+      </option>
+
+      <option value="2" <%= r.rating === 2 ? "selected" : "" %>>
+        ⭐⭐ Poor
+      </option>
+
+      <option value="1" <%= r.rating === 1 ? "selected" : "" %>>
+        ⭐ Very Poor
+      </option>
+    </select>
+  </div>
+
+  <!-- Review Text -->
+  <div class="mb-4">
+    <label for="reviewText" class="form-label fw-bold">Your Review</label>
+    <textarea
+      class="form-control form-control-lg"
+      id="reviewText"
+      name="reviewText"
+      rows="5"
+      placeholder="Share your thoughts about the dining hall experience..."
+      required
+    ><%= r.reviewText || "" %></textarea>
+
+    <small class="form-text text-muted">
+      Min 5 characters, Max 500 characters
+    </small>
+  </div>
+
+  <!-- Category -->
+  <div class="mb-4">
+    <label for="category" class="form-label fw-bold">Feedback Category</label>
+    <select class="form-select form-select-lg" id="category" name="category" required>
+      <option value="">Select a category...</option>
+
+      <option value="Food Quality" <%= r.category === "Food Quality" ? "selected" : "" %>>
+        Food Quality
+      </option>
+
+      <option value="Cleanliness" <%= r.category === "Cleanliness" ? "selected" : "" %>>
+        Cleanliness
+      </option>
+
+      <option value="Menu Variety" <%= r.category === "Menu Variety" ? "selected" : "" %>>
+        Menu Variety
+      </option>
+
+      <option value="Other" <%= r.category === "Other" ? "selected" : "" %>>
+        Other
+      </option>
+    </select>
+  </div>
+
+  <!-- Image Upload -->
+    <div class="mb-4">
+    <label for="reviewImage" class="form-label fw-bold">
+        <%= isEditMode ? "Replace Image" : "Upload an Image" %>
+    </label>
+
+    <% if (isEditMode && r.imagePath) { %>
+        <div class="mb-3">
+        <p class="text-muted mb-2">Current image:</p>
+        <img
+            src="<%= r.imagePath %>"
+            alt="Current review image"
+            class="img-fluid rounded shadow-sm"
+            style="max-height: 250px;"
+        >
+        </div>
+    <% } %>
+
+    <input
+        class="form-control form-control-lg"
+        type="file"
+        id="reviewImage"
+        name="reviewImage"
+        accept="image/*"
+    >
+
+    
+
+    <% if (isEditMode && r.imagePath) { %>
+        <div class="form-check mt-3">
+        <input
+            class="form-check-input"
+            type="checkbox"
+            id="removeImage"
+            name="removeImage"
+        >
+        <label class="form-check-label text-danger" for="removeImage">
+            Remove current image
+        </label>
+        </div>
+    <% } %>
+    </div>
+
+  <!-- Can Display -->
+  <div class="mb-4">
+    <div class="form-check form-switch">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="display"
+        name="display"
+        <%= r.canDisplay ? "checked" : "" %>
+      >
+
+      <label class="form-check-label" for="display">
+        Allow review to be displayed?
+      </label>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+    <% if (isEditMode) { %>
+      <a href="/admin" class="btn btn-outline-secondary btn-lg">
+        Cancel
+      </a>
+    <% } else { %>
+      <button type="reset" class="btn btn-outline-secondary btn-lg">
+        Clear
+      </button>
+    <% } %>
+
+    <button type="submit" class="btn btn-primary btn-lg">
+      <%= submitText %>
+    </button>
+  </div>
+</form>
