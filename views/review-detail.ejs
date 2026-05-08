@@ -18,12 +18,12 @@
 		<%- include('partials/navbar-staff') %>
 
 		<div class="px-4 pt-5 my-5 text-center border-bottom">
-			<h1 class="display-4 fw-bold text-body-emphasis mb-5">#<%= reviewID %></h1>
+			<h1 class="display-4 fw-bold text-body-emphasis mb-5">Review #<%= reviewID %></h1>
 		</div>
 
 		<div class="container px-4 py-5">
             <% if (isAdmin) { %>
-                <td class="text-nowrap">
+                <div class="text-nowrap">
                     <div class="d-flex gap-2 justify-content-end">
                         <a 
                             href="/admin/review/<%= review.reviewID %>/edit" 
@@ -46,7 +46,7 @@
                             </button>
                         </form>
                     </div>
-                </td>
+                </div>
             <% } %>
 			<h2 class="pb-2">Details</h2>
             <table class="table table-sm table-bordered">

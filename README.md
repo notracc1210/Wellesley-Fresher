@@ -73,7 +73,7 @@ Future improvements may include:
 	- email: tower.staff@wellesley.edu
 	- password: test1234
 - Admin Login
-    - emial: pc111@cs.wellesley.edu
+    - email: pc111@cs.wellesley.edu
     - password: 867freshereatNissiTracy
 
 - What you can do for the Beta version:

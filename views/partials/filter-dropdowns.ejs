@@ -1,0 +1,52 @@
+<%
+  const diningHalls = [
+    { value: "Bates Hall", label: "Bates" },
+    { value: "Tower Court", label: "Tower" },
+    { value: "Lulu Chow Wang Center", label: "Lulu" },
+    { value: "Stone Davis", label: "Stone Davis" },
+    { value: "Collins Cafe", label: "Collins Cafe" },
+    { value: "Saxbys", label: "Saxbys" }
+  ];
+
+  const mealTimes = ["Breakfast", "Brunch", "Lunch", "Dinner"];
+%>
+
+<div class="dropdown-DiningHall">
+  <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+    Dining Hall
+  </button>
+  <ul class="dropdown-menu p-3" data-bs-auto-close="outside">
+    <li>
+      <fieldset class="border-0 p-0 m-0">
+        <legend class="visually-hidden">Filter by dining hall</legend>
+        <% diningHalls.forEach(hall => { %>
+          <label class="dropdown-item">
+            <input type="checkbox" name="diningHall" value="<%= hall.value %>"
+              <%= selectedDiningHalls.includes(hall.value) ? "checked" : "" %>>
+            <%= hall.label %>
+          </label>
+        <% }) %>
+      </fieldset>
+    </li>
+  </ul>
+</div>
+
+<div class="dropdown-MealTime">
+  <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+    Meal Time
+  </button>
+  <ul class="dropdown-menu p-3" data-bs-auto-close="outside">
+    <li>
+      <fieldset class="border-0 p-0 m-0">
+        <legend class="visually-hidden">Filter by meal time</legend>
+        <% mealTimes.forEach(meal => { %>
+          <label class="dropdown-item">
+            <input type="checkbox" name="mealTime" value="<%= meal %>"
+              <%= selectedMealTime.includes(meal) ? "checked" : "" %>>
+            <%= meal %>
+          </label>
+        <% }) %>
+      </fieldset>
+    </li>
+  </ul>
+</div>

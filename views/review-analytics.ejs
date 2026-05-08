@@ -16,28 +16,6 @@
 <body>
 	<%- include('partials/navbar-staff') %>
 
-	<%
-		const diningHallOptions = [
-			"Bates Hall",
-			"Tower Court",
-			"Lulu Chow Wang Center",
-			"Stone Davis",
-			"Collins Cafe",
-			"Saxbys",
-			"Other"
-		];
-
-		const mealTimeOptions = [
-			"Breakfast",
-			"Brunch",
-			"Lunch",
-			"Dinner"
-		];
-
-		const selectedHalls = selectedDiningHalls || [];
-		const selectedMeals = selectedMealTime || [];
-	%>
-
 	<div class="container py-5">
 		<div class="text-center mb-5">
 			<h1 class="display-4 fw-bold text-body-emphasis">
@@ -58,184 +36,32 @@
 					</h2>
 
 					<form method="GET" action="<%= analyticsPath %>" class="d-flex flex-wrap gap-3 align-items-center justify-content-center">
+						<%- include('partials/filter-dropdowns') %>
 
-	<div class="dropdown-DiningHall">
-		<button
-			class="btn btn-outline-dark dropdown-toggle"
-			type="button"
-			data-bs-toggle="dropdown"
-		>
-			Dining Hall
-		</button>
+						<label for="startDate" class="visually-hidden">Start Date</label>
+						<input
+							type="date"
+							id="startDate"
+							name="startDate"
+							value="<%= startDate %>"
+							class="form-control"
+							style="width: 150px;"
+						/>
 
-		<ul class="dropdown-menu p-3" data-bs-auto-close="outside">
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="diningHall"
-						value="Bates Hall"
-						<%= selectedDiningHalls.includes("Bates Hall") ? "checked" : "" %>
-					>
-					Bates
-				</label>
-			</li>
+						<label for="endDate" class="visually-hidden">End Date</label>
+						<input
+							type="date"
+							id="endDate"
+							name="endDate"
+							value="<%= endDate %>"
+							class="form-control"
+							style="width: 150px;"
+						/>
 
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="diningHall"
-						value="Tower Court"
-						<%= selectedDiningHalls.includes("Tower Court") ? "checked" : "" %>
-					>
-					Tower
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="diningHall"
-						value="Lulu Chow Wang Center"
-						<%= selectedDiningHalls.includes("Lulu Chow Wang Center") ? "checked" : "" %>
-					>
-					Lulu
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="diningHall"
-						value="Stone Davis"
-						<%= selectedDiningHalls.includes("Stone Davis") ? "checked" : "" %>
-					>
-					Stone Davis
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="diningHall"
-						value="Collins Cafe"
-						<%= selectedDiningHalls.includes("Collins Cafe") ? "checked" : "" %>
-					>
-					Collins Cafe
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="diningHall"
-						value="Saxbys"
-						<%= selectedDiningHalls.includes("Saxbys") ? "checked" : "" %>
-					>
-					Saxbys
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="diningHall"
-						value="Other"
-						<%= selectedDiningHalls.includes("Other") ? "checked" : "" %>
-					>
-					Other
-				</label>
-			</li>
-		</ul>
-	</div>
-
-	<div class="dropdown-MealTime">
-		<button
-			class="btn btn-outline-dark dropdown-toggle"
-			type="button"
-			data-bs-toggle="dropdown"
-		>
-			Meal Time
-		</button>
-
-		<ul class="dropdown-menu p-3" data-bs-auto-close="outside">
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="mealTime"
-						value="Breakfast"
-						<%= selectedMealTime.includes("Breakfast") ? "checked" : "" %>
-					>
-					Breakfast
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="mealTime"
-						value="Brunch"
-						<%= selectedMealTime.includes("Brunch") ? "checked" : "" %>
-					>
-					Brunch
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="mealTime"
-						value="Lunch"
-						<%= selectedMealTime.includes("Lunch") ? "checked" : "" %>
-					>
-					Lunch
-				</label>
-			</li>
-
-			<li>
-				<label class="dropdown-item">
-					<input
-						type="checkbox"
-						name="mealTime"
-						value="Dinner"
-						<%= selectedMealTime.includes("Dinner") ? "checked" : "" %>
-					>
-					Dinner
-				</label>
-			</li>
-		</ul>
-	</div>
-
-	<input
-		type="date"
-		name="startDate"
-		value="<%= startDate %>"
-		class="form-control"
-		style="width: 140px;"
-	>
-
-	<input
-		type="date"
-		name="endDate"
-		value="<%= endDate %>"
-		class="form-control"
-		style="width: 140px;"
-	>
-
-	<button type="submit" class="btn btn-primary">
-		Apply Filters
-	</button>
-
-</form>
+						<button type="submit" class="btn btn-primary">
+							Apply Filters
+						</button>
+					</form>
 				</section>
 
 				<section class="text-center mt-5 pt-4">

@@ -9,6 +9,7 @@ const flash = require("express-flash");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 
+
 // our modules loaded from cwd
 
 const { Connection } = require("./connection");
@@ -44,7 +45,6 @@ app.use(flash());
 
 app.use(express.static("public"));
 
-
 const mongoUri = cs304.getMongoUri();
 
 // ================================================================
@@ -60,13 +60,22 @@ const ADMIN = "admin";
 
 const ROUNDS = 10;
 
+// route for liking reviews
+const { ObjectId } = require('mongodb');
+const { link } = require("fs");
+
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
 		cb(null, "public/images");
 	},
 	filename: function (req, file, cb) {
-		const uniqueName = Date.now() + "-" + file.originalname;
-		cb(null, uniqueName);
+		const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9.\-_]/g, "_");
+		const ext = path.extname(safeName).toLowerCase();
+		const allowed = [".png", ".jpg", ".jpeg", ".gif", ".webp"];
+		if (!allowed.includes(ext)) {
+			return cb(new Error("Invalid file extension"), null);
+		}
+		cb(null, Date.now() + "-" + safeName);
 	}
 });
 
@@ -131,8 +140,8 @@ app.get("/login", (req, res) => {
 
 app.post("/login", async (req, res) => {
 	try {
-		const email = req.body.email;
-		const password = req.body.password;
+		const email = String(req.body.email || "");
+		const password = String(req.body.password || "");
 		const db = await Connection.open(mongoUri, DB);
 		let existingUser = await db.collection(STUDENTS).findOne({ email: email });
 		let existingStaff = await db.collection(STAFF).findOne({ email: email });
@@ -333,7 +342,6 @@ async function renderReviewDetail(req, res, collectionName, backUrl, isAdmin) {
 	const reviewID = parseInt(req.params.reviewID);
 
 	if (isNaN(reviewID)) {
-		req.flash("error", "Invalid review ID.");
 		return res.redirect(backUrl);
 	}
 
@@ -342,7 +350,6 @@ async function renderReviewDetail(req, res, collectionName, backUrl, isAdmin) {
 	});
 
 	if (!review) {
-		req.flash("error", "Review not found.");
 		return res.redirect(backUrl);
 	}
 
@@ -370,12 +377,21 @@ app.post("/admin/review/:reviewID/delete", async (req, res) => {
 
 	const reviewID = parseInt(req.params.reviewID);
 
-	await db.collection(REVIEWS).deleteOne({
-		reviewID: reviewID
-	});
+	if (isNaN(reviewID)) {
+		req.flash("error", "Invalid review ID.");
+		return res.redirect("/admin");
+	}
 
+	const result = await db.collection(REVIEWS).deleteOne({ reviewID });
+
+	if (result.deletedCount === 0) {
+		req.flash("error", "Review not found.");
+	} else {
+		req.flash("info", "Review deleted.");
+	}
 	return res.redirect("/admin");
 });
+
 
 app.get("/admin/review/:reviewID/edit", async (req, res) => {
 	const db = await requireUserInCollection(req, res, ADMIN);
@@ -384,7 +400,6 @@ app.get("/admin/review/:reviewID/edit", async (req, res) => {
 	const reviewID = parseInt(req.params.reviewID);
 
 	if (isNaN(reviewID)) {
-		req.flash("error", "Invalid review ID.");
 		return res.redirect("/admin");
 	}
 
@@ -393,7 +408,6 @@ app.get("/admin/review/:reviewID/edit", async (req, res) => {
 	});
 
 	if (!review) {
-		req.flash("error", "Review not found.");
 		return res.redirect("/admin");
 	}
 
@@ -447,7 +461,6 @@ app.post("/admin/review/:reviewID/edit", upload.single("reviewImage"), async (re
 		{ $set: updateFields }
 	);
 
-	req.flash("info", "Review updated successfully.");
 	return res.redirect("/admin");
 });
 
@@ -549,22 +562,6 @@ app.get("/admin/analytics", async (req, res) => {
 	});
 });
 
-
-// review submission form, check login functionality
-app.get("/review-form", (req, res) => {
-	if (!req.session.logged_in) {
-		req.flash("error", "You must be logged in to submit a review.");
-		return res.redirect("/login");
-	}
-	return res.render("review-form.ejs", {
-		logged_in: req.session.logged_in,
-		email: req.session.email,
-	});
-});
-
-app.get("/submit-review", async (req,res) => {
-	res.render("submit-review.ejs");
-});
 
 // Increments the counter for the given collection key and returns the new value.
 // Used to generate unique sequential IDs for new reviews.
@@ -672,11 +669,12 @@ app.get("/signup", (req, res) => {
 
 app.post("/signup", async (req, res) => {
 	try {
-		const email = req.body.email;
-		const password = req.body.password;
+		const email = String(req.body.email || "");
+		const password = String(req.body.password || "");
 		const db = await Connection.open(mongoUri, DB);
 		let existingStudent = await db.collection(STUDENTS).findOne({ email: email });
 		let existingStaff = await db.collection(STAFF).findOne({ email: email });
+		let existingAdmin = await db.collection(ADMIN).findOne({ email: email });
 		if (existingStudent) {
 			req.flash(
 				"error",
@@ -691,11 +689,18 @@ app.post("/signup", async (req, res) => {
 			);
 			return res.redirect("/signup");
 		}
+		if (existingAdmin) {
+			req.flash(
+				"error",
+				'Please try again',
+			);
+			return res.redirect("/signup");
+		}
 		const hash = await bcrypt.hash(password, ROUNDS);
 		await db.collection(STUDENTS).insertOne({
 			email: email,
 			password: hash,
-			revieweCount: 0,
+			reviewCount: 0,
 		});
 
 		req.flash("info", "successfully joined and logged in as " + email);
@@ -708,10 +713,6 @@ app.post("/signup", async (req, res) => {
 		return res.redirect("/");
 	}
 });
-
-// route for liking reviews
-const { ObjectId } = require('mongodb');
-const { link } = require("fs");
 
 // AJAX to handle liking a review
 app.post('/like-review', async (req, res) => {
@@ -789,10 +790,8 @@ app.post("/logout", (req, res) => {
 	if (req.session.email) {
 		req.session.logged_in = false;
 		req.session.email = null;
-		req.flash("info", "You are logged out");
 		return res.redirect("/");
 	} else {
-		req.flash("error", "You are not logged in - please do so.");
 		return res.redirect("/");
 	}
 });

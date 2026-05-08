@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Wellesley-Fresh-Staff</title>
+		<title>Wellesley-Fresh-Dashboard</title>
 
 		<link
 			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -25,207 +25,118 @@
 
 		<div class="container px-4 py-5" id="custom-cards">
 			<h2 class="pb-2 border-bottom">Reviews</h2>
+			<form method="GET" action="<%= isAdmin ? '/admin' : '/staff' %>" class="d-flex flex-wrap gap-3 align-items-center mb-4">
+			<input type="hidden" name="page" value="1">
 
-			<form method="GET" action="<%= isAdmin ? '/admin' : '/staff' %>" class="d-flex flex-wrap gap-3 align-items-center">
-				<div class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
-					<input
-							type="search"
-							class="form-control form-control-light text-bg-light mt-3 mb-3"
-							placeholder="Search for reviews"
-							aria-label="Search"
-							name="search"
-							 value="<%= search %>"
-						/>
-				</div>
-				<input type="hidden" name="page" value="1">
-				<div class="dropdown-DiningHall">
-					<button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">Dining Hall</button>
-					<ul class="dropdown-menu p-3" data-bs-auto-close="outside">
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="diningHall" value="Bates Hall"
-									<%= selectedDiningHalls.includes("Bates Hall") ? "checked" : "" %>>
-									Bates
-							</label>
-						</li>
+			<input
+				type="search"
+				class="form-control"
+				placeholder="Search for reviews"
+				aria-label="Search"
+				name="search"
+				value="<%= search %>"
+				style="width: 200px;"
+			/>
 
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="diningHall" value="Tower Court"
-										<%= selectedDiningHalls.includes("Tower Court") ? "checked" : "" %>>
-										Tower
-							</label>
-						</li>
+			<%- include('partials/filter-dropdowns') %>
 
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="diningHall" value="Lulu Chow Wang Center"
-										<%= selectedDiningHalls.includes("Lulu Chow Wang Center") ? "checked" : "" %>>
-										Lulu
-							</label>
-						</li>
+			<label for="startDate" class="visually-hidden">Start Date</label>
+			<input
+				type="date"
+				id="startDate"
+				name="startDate"
+				value="<%= startDate %>"
+				class="form-control"
+				style="width: 150px;"
+			/>
 
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="diningHall" value="Stone Davis"
-										<%= selectedDiningHalls.includes("Stone Davis") ? "checked" : "" %>>
-										Stone Davis
-							</label>
-						</li>
+			<label for="endDate" class="visually-hidden">End Date</label>
+			<input
+				type="date"
+				id="endDate"
+				name="endDate"
+				value="<%= endDate %>"
+				class="form-control"
+				style="width: 150px;"
+			/>
 
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="diningHall" value="Collins Cafe"
-										<%= selectedDiningHalls.includes("Collins Cafe") ? "checked" : "" %>>
-										Collins Cafe
-							</label>
-						</li>
+			<button type="submit" class="btn btn-primary">Apply filters</button>
+		</form>
+		<div class="column row-cols-1 align-items-stretch py-5">
 
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="diningHall" value="Saxbys"
-										<%= selectedDiningHalls.includes("Saxbys") ? "checked" : "" %>>
-										Saxbys
-							</label>
-						</li>
-					</ul>
-				</div>
-
-				<div class="dropdown-MealTime">
-					<button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">Meal Time</button>
-					<ul class="dropdown-menu p-3" data-bs-auto-close="outside">
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="mealTime" value="Breakfast"
-									<%= selectedMealTime.includes("Breakfast") ? "checked" : "" %>>
-									Breakfast
-							</label>
-						</li>
-
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="mealTime" value="Brunch"
-									<%= selectedMealTime.includes("Brunch") ? "checked" : "" %>>
-									Brunch
-							</label>
-						</li>
-
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="mealTime" value="Lunch"
-									<%= selectedMealTime.includes("Lunch") ? "checked" : "" %>>
-									Lunch
-							</label>
-						</li>
-
-						<li>
-							<label class="dropdown-item">
-								<input type="checkbox" name="mealTime" value="Dinner"
-									<%= selectedMealTime.includes("Dinner") ? "checked" : "" %>>
-									Dinner
-							</label>
-						</li>
-					</ul>
-				</div>
-
-				<input
-					type="date"
-					name="startDate"
-					value="<%= startDate %>"
-					class="form-control"
-					style="width: 130px;"
-					/>
-
-					<input
-					type="date"
-					name="endDate"
-					value="<%= endDate %>"
-					class="form-control"
-					style="width: 130px;"
-					/>
-
-				<button type="submit" class="btn btn-primary">
-					Apply filters
-				</button>
-			</form>
-			<div class="column row-cols-1 align-items-stretch py-5">
-
-				<% reviews.forEach(review => { %>
-					<div class="col mb-3">
-						<div
-							class="card card-cover h-100 overflow-hidden text-bg-light "
-						>	
-							<div class="card-header">#<%= review.reviewID %></div>
-							<div class="d-flex flex-column h-100 p-5 pb-3 text-dark">
-								<p style="font-size: 15px;">⭐️<%= review.rating %></p>
-								<p style="font-size: 22px;"><%= review.reviewText %></p>
-								<ul class="d-flex list-unstyled mt-auto">
-									<li class="d-flex align-items-center me-3">
-										<small><a href="<%= isAdmin ? '/admin' : '/staff' %>/review-detail/<%= review.reviewID %>">
-												View Detail
-											</a>
-										</small>
-									</li>
-									<li class="me-auto">
-									</li>
-									<li class="d-flex align-items-center me-3">
-										<small><%= review.diningHall %></small>
-									</li>
-									<li class="d-flex align-items-center me-3">
-										<small><%= review.mealTime %></small>
-									</li>
-									<li class="d-flex align-items-center">
-										<small><%= new Date(review.dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %></small>
-									</li>
-								</ul>
-							</div>
+			<% reviews.forEach(review => { %>
+				<div class="col mb-3">
+					<div class="card card-cover h-100 overflow-hidden text-bg-light">
+						<h3 class="card-header h5 mb-0">#<%= review.reviewID %></h3>
+						<div class="d-flex flex-column h-100 p-5 pb-3 text-dark">
+							<p style="font-size: 15px;">⭐️<%= review.rating %></p>
+							<h4 style="font-size: 22px;"><%= review.reviewText %></h4>
+							<ul class="d-flex list-unstyled mt-auto">
+								<li class="d-flex align-items-center me-3">
+									<small><a href="<%= isAdmin ? '/admin' : '/staff' %>/review-detail/<%= review.reviewID %>">
+										View Detail
+									</a></small>
+								</li>
+								<li class="me-auto"></li>
+								<li class="d-flex align-items-center me-3">
+									<small><%= review.diningHall %></small>
+								</li>
+								<li class="d-flex align-items-center me-3">
+									<small><%= review.mealTime %></small>
+								</li>
+								<li class="d-flex align-items-center">
+									<small><%= new Date(review.dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %></small>
+								</li>
+							</ul>
 						</div>
 					</div>
-				<% }) %>
-				
-				<nav class="d-flex justify-content-center align-items-center gap-2 mt-4">
-					<% const dashboardPath = isAdmin ? "/admin" : "/staff"; %>
-					<% if (page > 1) { %>
-						<a class="btn btn-outline-dark" href="<%= pageUrl(page - 1) %>">←</a>
-					<% } else { %>
-						<button class="btn btn-outline-secondary" disabled>←</button>
-					<% } %>
+				</div>
+			<% }) %>
 
-					<form method="GET" action="<%= dashboardPath %>" class="d-flex align-items-center gap-2">
-						<% selectedDiningHalls.forEach(hall => { %>
-							<input type="hidden" name="diningHall" value="<%= hall %>">
-						<% }) %>
 
-						<% selectedMealTime.forEach(time => { %>
-							<input type="hidden" name="mealTime" value="<%= time %>">
-						<% }) %>
-						<input type="hidden" name="startDate" value="<%= startDate %>">
-						<input type="hidden" name="endDate" value="<%= endDate %>">
+			<nav class="d-flex justify-content-center align-items-center gap-2 mt-4">
+				<% const dashboardPath = isAdmin ? "/admin" : "/staff"; %>
+				<% if (page > 1) { %>
+					<a class="btn btn-outline-dark" href="<%= pageUrl(page - 1) %>" aria-label="Previous page">←</a>
+				<% } else { %>
+					<button class="btn btn-outline-secondary" disabled aria-label="Previous page">←</button>
+				<% } %>
 
+				<form method="GET" action="<%= dashboardPath %>" class="d-flex align-items-center gap-2">
+					<% selectedDiningHalls.forEach(hall => { %>
+						<input type="hidden" name="diningHall" value="<%= hall %>">
+					<% }) %>
+					<% selectedMealTime.forEach(time => { %>
+						<input type="hidden" name="mealTime" value="<%= time %>">
+					<% }) %>
+					<input type="hidden" name="startDate" value="<%= startDate %>">
+					<input type="hidden" name="endDate" value="<%= endDate %>">
+
+					<label for="pageInput" class="visually-hidden">Page number</label>
 						<input
-						type="number"
-						name="page"
-						value="<%= page %>"
-						min="1"
-						max="<%= totalPages %>"
-						class="form-control text-center"
-						style="width: 80px;"
+							type="number"
+							name="page"
+							value="<%= page %>"
+							min="1"
+							max="<%= totalPages %>"
+							class="form-control text-center"
+							style="width: 80px;"
+							id="pageInput"
 						/>
 
-						<span>of <%= totalPages %></span>
+					<span>of <%= totalPages %></span>
 
-						<button type="submit" class="btn btn-primary">Go</button>
-					</form>
+					<button type="submit" class="btn btn-primary">Go</button>
+				</form>
 
-					<% if (page < totalPages) { %>
-						<a class="btn btn-outline-dark" href="<%= pageUrl(page + 1) %>">
-						→
-						</a>
-					<% } else { %>
-						<button class="btn btn-outline-secondary" disabled>→</button>
-					<% } %>
-				</nav>
-			</div>
+				<% if (page < totalPages) { %>
+					<a class="btn btn-outline-dark" href="<%= pageUrl(page + 1) %>" aria-label="Next page">→</a>
+				<% } else { %>
+					<button class="btn btn-outline-secondary" disabled aria-label="Next page">→</button>
+				<% } %>
+			</nav>
+		</div>
+
 		</div>
 	</body>
 </html>
