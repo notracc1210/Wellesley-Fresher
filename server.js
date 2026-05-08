@@ -30,9 +30,10 @@ app.use(bodyParser.json());
 
 app.use(cs304.logRequestData); // tell the user about any request data
 
-app.set("view engine", "ejs");
+app.set("view engine", "ejs"); // use EJS to render pages
 
-app.use(
+// set up cookie sessions
+app.use( 
 	cookieSession({
 		name: "session",
 		keys: [cs304.randomString(20)],
@@ -41,11 +42,11 @@ app.use(
 		maxAge: 24 * 60 * 60 * 1000, // 24 hours
 	}),
 );
-app.use(flash());
+app.use(flash()); // use flash for temporary (debug/error) messages
 
 app.use(express.static("public"));
 
-const mongoUri = cs304.getMongoUri();
+const mongoUri = cs304.getMongoUri(); // use cs304 helper to get the Mongo URI from env
 
 // ================================================================
 // custom routes here
@@ -64,6 +65,7 @@ const ROUNDS = 10;
 const { ObjectId } = require('mongodb');
 const { link } = require("fs");
 
+// route for uploading images in reviews, with validation for file type and size
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
 		cb(null, "public/images");
@@ -96,7 +98,7 @@ const upload = multer({
 });
 
 
-// main page
+// render the main page
 app.get("/home", async (req, res) => {
 	const db = await Connection.open(mongoUri, DB);
 	const display_reviews = await db
@@ -133,7 +135,7 @@ app.get("/", (req, res) => {
 	return res.redirect("/home");
 });
 
-// login routes AKA student login routes
+// login routes
 app.get("/login", (req, res) => {
 	return res.render("login.ejs");
 });
@@ -143,6 +145,7 @@ app.post("/login", async (req, res) => {
 		const email = String(req.body.email || "");
 		const password = String(req.body.password || "");
 		const db = await Connection.open(mongoUri, DB);
+		// distinguish between students, staff, and admin for login
 		let existingUser = await db.collection(STUDENTS).findOne({ email: email });
 		let existingStaff = await db.collection(STAFF).findOne({ email: email });
 		let existingAdmin = await db.collection(ADMIN).findOne({ email: email });
@@ -187,13 +190,14 @@ app.post("/login", async (req, res) => {
 		req.session.logged_in = true;
 		console.log("login as", email);
 		return res.redirect("/");
-	} catch (error) {
+	} catch (error) { // send an error message if something goes wrong with login process
 		console.log(error);
 		req.flash("error", `Form submission error: ${error}`);
 		return res.redirect("/");
 	}
 });
 
+// Helper function to check if user is logged in and belongs to the specified collection
 async function requireUserInCollection(req, res, collectionName) {
 	const db = await Connection.open(mongoUri, DB);
 
@@ -216,6 +220,7 @@ async function requireUserInCollection(req, res, collectionName) {
 	return db;
 }
 
+// Helper function to get review data for dashboard with filtering, pagination, and search
 async function getReviewDashboardData(req, db, baseUrl) {
 	const selectedDiningHalls = req.query.diningHall
 		? Array.isArray(req.query.diningHall)
@@ -306,7 +311,7 @@ async function getReviewDashboardData(req, db, baseUrl) {
 	};
 }
 
-// staff page/dashboard
+// route for staff dashboard and admin dashboard, with filtering, pagination, and search
 app.get("/staff", async (req, res) => {
 	const db = await requireUserInCollection(req, res, STAFF);
 	if (!db) return;
@@ -320,7 +325,7 @@ app.get("/staff", async (req, res) => {
 		analyticsPath: "/staff/analytics"
 	});
 });
-
+// admin dashboard with same functionality as staff but with edit/delete options
 app.get("/admin", async (req, res) => {
 	const db = await requireUserInCollection(req, res, ADMIN);
 	if (!db) return;
@@ -335,6 +340,7 @@ app.get("/admin", async (req, res) => {
 	});
 });
 
+// route for review detail page for admin
 async function renderReviewDetail(req, res, collectionName, backUrl, isAdmin) {
 	const db = await requireUserInCollection(req, res, collectionName);
 	if (!db) return;
@@ -371,6 +377,7 @@ app.get("/admin/review-detail/:reviewID", async (req, res) => {
 	return renderReviewDetail(req, res, ADMIN, "/admin", true);
 });
 
+// delete review route for admin
 app.post("/admin/review/:reviewID/delete", async (req, res) => {
 	const db = await requireUserInCollection(req, res, ADMIN);
 	if (!db) return;
@@ -392,7 +399,7 @@ app.post("/admin/review/:reviewID/delete", async (req, res) => {
 	return res.redirect("/admin");
 });
 
-
+// edit review route for admin
 app.get("/admin/review/:reviewID/edit", async (req, res) => {
 	const db = await requireUserInCollection(req, res, ADMIN);
 	if (!db) return;
@@ -419,6 +426,7 @@ app.get("/admin/review/:reviewID/edit", async (req, res) => {
 	});
 });
 
+// handle edit review form submission for admin, with image upload/validation/ability to remove exisiting image
 app.post("/admin/review/:reviewID/edit", upload.single("reviewImage"), async (req, res) => {
 	const db = await requireUserInCollection(req, res, ADMIN);
 	if (!db) return;
@@ -464,6 +472,7 @@ app.post("/admin/review/:reviewID/edit", upload.single("reviewImage"), async (re
 	return res.redirect("/admin");
 });
 
+// function to get analytics data for reviews based on filters
 async function getReviewAnalyticsData(req, db) {
 	const selectedDiningHalls = req.query.diningHall
 		? Array.isArray(req.query.diningHall)
@@ -530,6 +539,7 @@ async function getReviewAnalyticsData(req, db) {
 	};
 }
 
+// route for analytics pages for staff and admin
 app.get("/staff/analytics", async (req, res) => {
 	const db = await requireUserInCollection(req, res, STAFF);
 	if (!db) return;
@@ -634,6 +644,7 @@ app.post("/submit-review", upload.single("reviewImage"), async (req, res) => {
 		const counters = db.collection(COUNTERS);
 		let reviewID = await incrCounter(counters, "reviews");
 
+		// document structure for document in reviews collection
 		const newReview = {
 			reviewID,
 			userEmail: req.session.email,
@@ -663,6 +674,7 @@ app.post("/submit-review", upload.single("reviewImage"), async (req, res) => {
 	}
 });
 
+// signup routes
 app.get("/signup", (req, res) => {
 	return res.render("signup.ejs");
 });
@@ -783,9 +795,9 @@ app.post('/like-review', async (req, res) => {
         return res.status(500).json({ error: 'Error processing like: ' + error.message });
     }
 });
+// end  of like-review route
 
-// end like-review route
-
+// logout route
 app.post("/logout", (req, res) => {
 	if (req.session.email) {
 		req.session.logged_in = false;
@@ -801,6 +813,7 @@ app.post("/logout", (req, res) => {
 
 const serverPort = cs304.getPort(8080);
 
+// start the server, run it with "node server.js" and visit http://localhost:8080/ (or the printed URL) in your browser!
 app.listen(serverPort, function () {
 	console.log(`listening on ${serverPort}`);
 	console.log(`visit http://cs.wellesley.edu:${serverPort}/`);
