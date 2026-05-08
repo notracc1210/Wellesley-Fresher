@@ -37,15 +37,27 @@
       <h2 class="pb-2 border-bottom">Recent Reviews</h2>
       <div class="row row-cols-2 row-cols-lg-3 align-items-stretch g-4 py-5">
         
-        <% display_reviews.forEach(review => { %>
+       <% display_reviews.forEach((review, index) => { %>
+          <% 
+            // Use review image as background if available, otherwise use gray
+            let bgStyle = "background-color: #495057;";
+            if(review.imagePath) {
+              bgStyle = "background-image: url('" + review.imagePath + "'); background-size: cover; background-position: center;";
+            }
+          %>
           <div class="col">
-            <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg"
-                style="background-image: url(&quot;unsplash-photo-1.jpg&quot;)">
-              <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+            <div class="card card-cover h-100 overflow-hidden text-bg-dark rounded-4 shadow-lg position-relative"
+                style= "<%= bgStyle %>">
+              
+              <!-- Background overlay for text readability -->
+              <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);"></div>
+              
+              <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1 position-relative" style="z-index: 1;">
                 <h3 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
                   <%= review.reviewText %>
                 </h3>
-                <ul class="d-flex list-unstyled mt-auto">
+                
+                <ul class="d-flex list-unstyled mt-auto mb-3">
                   <li class="d-flex align-items-center me-3">
                     <small><%= review.diningHall %></small>
                   </li>
@@ -53,11 +65,34 @@
                     <small><%= new Date(review.dateUploaded).toLocaleDateString('en-US', {month: 'long', day: 'numeric'}) %></small>
                   </li>
                 </ul>
+                
+                <!-- like reviews functionality -->
+                <div class="mt-2">
+                  <% if(logged_in) { %>
+                    <!-- User is logged in - show like button -->
+                    <button class="btn btn-sm btn-light like-btn" 
+                            data-review-id="<%= review._id %>"
+                            data-index="<%= index %>"
+                            title="Click to like this review">
+                      <span class="heart-icon">🤍</span>
+                      <span class="like-count"><%= review.likes || 0 %></span>
+                    </button>
+                  <% } else { %>
+                    <!-- User not logged in - show like count only-->
+                    <button class="btn btn-sm btn-light like-btn-readonly" disabled>
+                      <span class="heart-icon">🤍</span>
+                      <span class="like-count"><%= review.likes || 0 %></span>
+                    </button>
+                  <% } %>
+                </div>
+
               </div>
             </div>
           </div>
         <% }) %>  
       </div>
     </div>
+
+    <script src="/js/likes.js"></script>
   </body>
 </html>

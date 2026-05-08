@@ -13,7 +13,7 @@ Created by:
 
 ## Project Status
 
-This project is currently in the Alpha stage.
+This project is currently in the Beta stage.
 
 Current implemented features include:
 
@@ -21,6 +21,7 @@ Current implemented features include:
 - Student sign up and login
     - Flash error messages
     - Student submit feedback (dining hall, meal time, star rating, review text, category selection, image upload)
+    - Students can 'like' or 'unlike' reviews on the homepage
 - Staff login
     - Flash error messages
     - Staff dashboard for viewing reviews
@@ -28,6 +29,9 @@ Current implemented features include:
     - Search by keyword or review ID
     - Review detail page
     - Pagination for staff dashboard results
+- Guest users (no log-in)
+    - Guests can read reviews on the homepage
+    - Guests can see how many 'lies' a review has
 
 Future improvements may include:
 
@@ -44,7 +48,7 @@ Future improvements may include:
 	- email: tower.staff@wellesley.edu
 	- password: test1234
 
-- What you can do for the alpha version:
+- What you can do for the Beta version:
     - View the most recent 6 reviews on the homepage (they are all permitted to be displayed by the students)
     - Log in from the top right button with the sample account (both students and staff)
     - Sign up from the top right button with the sample account (only students)
@@ -53,5 +57,5 @@ Future improvements may include:
     - Enter your feedback in the form
         - Text, options, and file upload
     - View the staff dashboard from the staff account
-    - View the details of each review
+    - View the details of each review, including images
     - Search and filter the reviews

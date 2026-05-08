@@ -66,7 +66,7 @@ app.get("/home", async (req, res) => {
 		.collection(REVIEWS)
 		.find(
 			{ canDisplay: true },
-			{ projection: { reviewText: 1, diningHall: 1, dateUploaded: 1 } },
+			{ projection: { reviewText: 1, diningHall: 1, dateUploaded: 1, likes: 1, likedBy: 1, imagePath:1 } },
 		)
 		.sort({dateUploaded: -1})
 		.limit(6)
@@ -75,9 +75,12 @@ app.get("/home", async (req, res) => {
 	// if not enough reviews, add placeholders
 	while (display_reviews.length < 6) {
 		display_reviews.push({
+			_id: new ObjectId(),
 			reviewText: "No reviews yet",
 			diningHall: "Coming soon",
 			dateUploaded: new Date(),
+			likes: 0,
+			likedBy: [],
 		});
 	}
 
@@ -376,6 +379,8 @@ app.post("/submit-review", upload.single("reviewImage"), async (req, res) => {
 			imagePath: imagePath,
 			canDisplay: display === "on",
 			dateUploaded: new Date(),
+			likes: 0,
+			likedBy: []
 		};
 
 		// Insert into database
@@ -434,6 +439,82 @@ app.post("/signup", async (req, res) => {
 		return res.redirect("/");
 	}
 });
+
+// route for liking reviews
+const { ObjectId } = require('mongodb');
+const { link } = require("fs");
+
+// AJAX to handle liking a review
+app.post('/like-review', async (req, res) => {
+    try {
+        // Check if user is logged in
+        if (!req.session.logged_in) {
+            return res.status(401).json({ error: 'You must be logged in to like a review' });
+        }
+
+        const reviewId = req.body.reviewId;
+        const userEmail = req.session.email;
+
+        if (!reviewId || !ObjectId.isValid(reviewId)) {
+            return res.status(400).json({ error: 'Invalid review ID' });
+        }
+
+        const db = await Connection.open(mongoUri, DB);
+        const reviewsCollection = db.collection(REVIEWS);
+
+        // Get current review
+        const review = await reviewsCollection.findOne({ _id: new ObjectId(reviewId) });
+
+        if (!review) {
+            return res.status(404).json({ error: 'Review not found' });
+        }
+
+        // Initialize arrays if array doesn't exist
+        if (!review.likedBy) review.likedBy = [];
+        if (review.likes === undefined) review.likes = 0;
+
+        // Check if user already liked review
+        const alreadyLiked = review.likedBy.includes(userEmail);
+
+        let updatedLikes;
+        let updatedLikedBy;
+
+        if (alreadyLiked) {
+            // Unlike
+            updatedLikedBy = review.likedBy.filter(email => email !== userEmail);
+            updatedLikes = Math.max(0, review.likes - 1);
+        } else {
+            // Like
+            updatedLikedBy = [...review.likedBy, userEmail];
+            updatedLikes = review.likes + 1;
+        }
+
+        // Update database
+        const result = await reviewsCollection.updateOne(
+            { _id: new ObjectId(reviewId) },
+            {
+                $set: {
+                    likes: updatedLikes,
+                    likedBy: updatedLikedBy
+                }
+            }
+        );
+
+        // Return updated like data
+        return res.json({
+            success: true,
+            likes: updatedLikes,
+            isLiked: !alreadyLiked, // true if now liked, false if now unliked
+            message: alreadyLiked ? 'Removed like' : 'Added like'
+        });
+
+    } catch (error) {
+        console.error('Error liking review:', error);
+        return res.status(500).json({ error: 'Error processing like: ' + error.message });
+    }
+});
+
+// end like-review route
 
 app.post("/logout", (req, res) => {
 	if (req.session.email) {
